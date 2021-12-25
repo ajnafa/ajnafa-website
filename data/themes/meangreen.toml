@@ -1,0 +1,20 @@
+# Custom University of North Texas Theme
+
+# Theme metadata
+name = "UNT"
+
+# Is theme light or dark?
+light = true
+
+# Primary
+primary = "#00853E"
+
+# Menu
+menu_primary = "#00853E"
+menu_text = "#fff"
+menu_text_active = "#006A31"
+menu_title = "#fff"
+
+# Home sections
+home_section_odd = "rgb(255, 255, 255)"
+home_section_even = "rgb(247, 247, 247)"

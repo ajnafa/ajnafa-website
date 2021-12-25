@@ -1,0 +1,5 @@
+<footer class="site-footer">
+  <p class="powered-by">
+    {{ with site.Copyright }}{{ replace . "{year}" now.Year | markdownify}}{{ end }}
+  </p>
+</footer>

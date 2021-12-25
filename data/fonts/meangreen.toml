@@ -1,0 +1,15 @@
+# Custom University of North Texas theme
+# See https://wowchemy.com/docs/getting-started/customization/#custom-theme for instructions on creating custom font sets
+# For UNT webpage guidelines, see https://identityguide.unt.edu/build-your-project/web-email-social-media/web-templates-required-elements
+
+# Theme metadata
+name = "UNT"
+
+# Optional Google font URL
+google_fonts = "family=EB+Garamond:wght@400;700&family=Source+Code+Pro:wght@400;700"
+
+# Font families
+heading_font = "EB Garamond"
+body_font = "EB Garamond"
+nav_font = "EB Garamond"
+mono_font = "Source Code Pro"
