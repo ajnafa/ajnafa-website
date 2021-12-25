@@ -1,7 +1,7 @@
 ## Configuration of Hugo Website Theme
 
 title: A. Jordan Nafa # Name of the Website
-baseurl: 'https://ajordanafa.com/' # Base Website URL
+baseurl: 'https://www.ajordannafa.com/' # Base Website URL
 copyright: '© 2021 A. Jordan Nafa' # Footer text, e.g. '© {year} Me'
 
 ## Website Language Settings
