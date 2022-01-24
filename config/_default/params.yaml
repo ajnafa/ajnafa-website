@@ -2,7 +2,7 @@
 
 # Appearance
 
-theme: meangreen
+theme: "meangreen"
 day_night: true
 font: "meangreen"
 font_size: L
@@ -30,7 +30,7 @@ coordinates:
   latitude: '33.210190'
   longitude: '-97.145579'
 office_hours:
-  - 'Monday 1:00 PM to 3:00 PM'
+  - 'Monday 1:30 PM to 3:00 PM'
   - 'Friday 2:00 PM to 3:00 PM'
 #appointment_url: 'https://calendly.com'
 contact_links:
@@ -51,7 +51,7 @@ main_menu:
   show_logo: true
   show_language: false
   show_day_night: true
-  show_search: true
+  show_search: false
   highlight_active_link: true
 
 # Localization
@@ -61,11 +61,13 @@ time_format: '3:04 PM'
 address_format: en-us
 
 # Site features
+show_navbar: true
 
 highlight: true
 highlight_languages:
   - r
   - python
+  - stan
 math: true
 diagram: false
 privacy_pack: false
@@ -82,8 +84,8 @@ show_related:
   page: false
   post: true
   project: true
-  publication: true
-  event: true
+  publication: false
+  event: false
 reading_time: true
 section_pager: false
 docs_section_pager: true

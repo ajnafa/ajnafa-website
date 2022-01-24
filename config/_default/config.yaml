@@ -20,7 +20,7 @@ module:
     - path: github.com/wowchemy/wowchemy-hugo-modules/wowchemy/v5
 
 ## Advanced Configuration Settings
-
+publish_mode: editorial_workflow
 enableGitInfo: false
 summaryLength: 30
 paginate: 10
@@ -49,6 +49,13 @@ taxonomies:
   author: authors
 markup:
   _merge: deep
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    codeFences: true
+    guessSyntax: true
+    style: "monokai"
 related:
   threshold: 80
   includeNewer: true
