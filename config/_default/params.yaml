@@ -51,7 +51,7 @@ main_menu:
   show_logo: true
   show_language: false
   show_day_night: true
-  show_search: false
+  show_search: true
   highlight_active_link: true
 
 # Localization
@@ -112,15 +112,16 @@ breadcrumb:
   page_types:
     book: true
 comments:
-  provider: ''
+  provider: 'disqus'
   commentable:
     post: true
-    book: true
-    project: true
-    publication: true
-    event: true
+    blog: true
+    book: false
+    project: false
+    publication: false
+    event: false
   disqus:
-    shortname: ''
+    shortname: 'ajordannafa'
     show_count: true
   commento:
     url: ''
@@ -143,7 +144,7 @@ marketing:
   baidu_tongji: ''
 cms:
   branch: master
-  local_backend: false
+  local_backend: true
 icon:
   pack:
     ai: true

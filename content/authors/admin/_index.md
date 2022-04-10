@@ -18,20 +18,21 @@ organizations:
   url: "https://politicalscience.unt.edu/people/adam-jordan-nafa"
 
 # Short bio (displayed in user profile at end of posts)
-bio: A. Jordan Nafa is a Doctoral Candidate in the Department of Political Science at the University of North Texas. His research focuses on the ways political representation influences individual attitudes and behavior with a particular emphasis on the affect of female descriptive representation in government on citizens\' support for democratic institutions.
+bio: A. Jordan Nafa is a Doctoral Candidate in the Department of Political Science at the University of North Texas. His research focuses on women in politics and comparative political behavior with a particular emphasis on how descriptive representation influences individual attitudes and institutions.
 
 interests:
 - Political Representation
 - Women in Politics
 - Comparative Political Behavior
-- Bayesian Inference and Political Methodology
+- Bayesian Inference
+- Quantitative Political Methodology
 
 education:
   courses:
   - course: Doctoral Candidate in Political Science
     institution: University of North Texas
     year: 2018 - Present
-  - course: Bachelor of Science in Political Science
+  - course: Bachelor of Science in Government
     institution: Texas Woman's University
     year: 2018
 
@@ -58,4 +59,4 @@ user_groups:
 - Visitors
 ---
 
-A. Jordan Nafa is a Doctoral Candidate in the [Department of Political Science](https://politicalscience.unt.edu/) at the [University of North Texas](https://www.unt.edu/). His research focuses on comparative political behavior, the descriptive representation of women in government, and Bayesian inference in the social sciences with a particular emphasis on the ways representation and inclusion influence individual attitudes towards political institutions and democracy.
+I am a Doctoral Candidate in the [Department of Political Science](https://politicalscience.unt.edu/) at the [University of North Texas](https://www.unt.edu/). My current research is focused on the intersection of women in politics and political behavior with a particular emphasis on how descriptive representation influences individual attitudes and institutions. I apply Bayesian statistics and predictive modeling to examine the causes and consequences of gender-based inclusion across a wide range of contexts and have a general interest in the development and application of Bayesian inference in the social sciences. My teaching interests center around comparative political institutions and behavior, women in politics, and quantitative political methodology.

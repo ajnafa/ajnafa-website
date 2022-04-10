@@ -2,7 +2,7 @@
 
 title: A. Jordan Nafa # Name of the Website
 baseurl: 'https://www.ajordannafa.com/' # Base Website URL
-copyright: '© 2021 A. Jordan Nafa' # Footer text, e.g. '© {year} Me'
+copyright: '© 2021-{year} A. Jordan Nafa' # Footer text, e.g. '© {year} Me'
 
 ## Website Language Settings
 
@@ -28,11 +28,11 @@ enableEmoji: true
 enableRobotsTXT: true
 footnotereturnlinkcontents: <sup>^</sup>
 ignoreFiles: [\.ipynb$, .ipynb_checkpoints$, \.Rmd$, \.Rmarkdown$, _cache$]
-#permalinks:
-#  event: '/talk/:slug/'
-#  tags: '/tag/:slug/'
-#  categories: '/category/:slug/'
-#  publication_types: '/publication-type/:slug/'
+permalinks:
+  blog: "/blog/:year/:month/:day/:slug/"
+  tags: "/blog/tags/:slug/"
+  year: "/blog/:slug/"
+  month: "/blog/:slug/"
 disableAliases: true
 outputs:
   home: [HTML, RSS, JSON, WebAppManifest, headers, redirects]
@@ -44,9 +44,9 @@ imaging:
 timeout: 600000
 taxonomies:
   tag: tags
-  category: categories
-  publication_type: publication_types
-  author: authors
+  research_type: research_type
+  year: year
+  month: month
 markup:
   _merge: deep
   goldmark:
