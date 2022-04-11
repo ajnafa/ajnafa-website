@@ -1,11 +1,11 @@
 # Main Website Configuration Parameters
 
 # Appearance
-
-theme: "meangreen"
-day_night: false
-font: "meangreen"
-font_size: L
+appearance:
+  theme_day: meangreen
+  theme_night: meangreen
+  font: meangreen
+  font_size: L
 
 # SEO
 
@@ -86,7 +86,7 @@ show_related:
   project: true
   publication: false
   event: false
-reading_time: true
+reading_time: false
 section_pager: false
 docs_section_pager: true
 sharing: true
