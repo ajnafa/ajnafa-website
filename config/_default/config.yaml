@@ -55,7 +55,7 @@ markup:
   highlight:
     codeFences: true
     guessSyntax: true
-    style: "monokai"
+    style: monokai
 related:
   threshold: 80
   includeNewer: true
