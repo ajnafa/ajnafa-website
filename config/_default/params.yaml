@@ -79,6 +79,7 @@ highlight_languages:
   - r
   - python
   - stan
+highlight_style: "monokai"
 math: true
 diagram: false
 privacy_pack: false

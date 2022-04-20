@@ -8,14 +8,12 @@ summary: "An introduction to simulating cross-sectional time series data in R"
 type: docs
 tags:
   - R
-  - brms
-  - Stan
-  - Bayesian
   - tidyverse
   - statistics
   - data visualization
   - simulation
-  - political science
+  - social science
+  - time series
 slug: data_sim_tutorial
 bibliography: "../../../assets/bib/references.bib"
 csl: "../../../assets/bib/apsa.csl"
@@ -24,6 +22,8 @@ math: true
 link-citations: yes
 reading_time: false
 commentable: true
+highlight: true
+highlight_style: "monokai"
 editor_options:
   chunk_output_type: console
 draft: false
@@ -127,6 +127,17 @@ bias_table <- function(.ols_equation, .fe_equation, .re_equation, .data_list, .t
 Directed Acylic Graphs (DAGs) provide a useful way for thinking about both simple and more complex relationships and dependencies among variables and it can often be helpful to graph out a structural model of the relationships you want to simulate. The `{dagitty}` and `{ggdag}` packages provide a straight forward approach to constructing DAGs directly R and I rely on them for the purposes herein [@Textor2016; @Barrett2021]. Imagine we are interested in estimating the causal effect of some time varying treatment $X_{t}$ on a continuous response $Y_{t}$ where the realized values of $X$ and $Y$ for each period $t \in \{1,2,\dots,T\}$ and unit $j \in \{1,2,\dots,J\}$ are a function of the treatment status for country $j$ at time $t-1$ and a vector of time varying confounders $Z_{t}$. The figure below, loosely adapted from @Blackwell2018, depicts such a data generation process.
 
 ```{r, collapse=TRUE}
+# Load the necessary libraries
+pacman::p_load(
+  "tidyverse",
+  "data.table",
+  "dtplyr",
+  "dagitty",
+  "ggdag",
+  "kableExtra",
+  install = FALSE
+)
+
 # Specify the DAG for the data generation process
 sim_dag <- dagify(
   x_t ~ x_tm1 + z_t + y_tm1,

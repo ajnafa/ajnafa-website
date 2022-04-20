@@ -8,14 +8,12 @@ summary: "An introduction to simulating cross-sectional time series data in R"
 type: docs
 tags:
   - R
-  - brms
-  - Stan
-  - Bayesian
   - tidyverse
   - statistics
   - data visualization
   - simulation
-  - political science
+  - social science
+  - time series
 slug: data_sim_tutorial
 bibliography: "../../../assets/bib/references.bib"
 csl: "../../../assets/bib/apsa.csl"
@@ -24,6 +22,8 @@ math: true
 link-citations: yes
 reading_time: false
 commentable: true
+highlight: true
+highlight_style: "monokai"
 editor_options:
   chunk_output_type: console
 draft: false
@@ -33,18 +33,27 @@ header:
 ---
 
 <script src="{{< blogdown/postref >}}index_files/kePrint/kePrint.js"></script>
-
 <link href="{{< blogdown/postref >}}index_files/lightable/lightable.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../../assets/bib/style.css" type="text/css" />
 
-Data simulation is easily near the top of the long list of useful skills that are seldom taught in social science graduate programs. This is unfortunate given the central role of simulation in model checking, sensitivity analysis, and developing a basic understanding of modeling assumptions and often complex relationships between the phenomena social scientists aspire to understand. My aim in this blog post is thus to provide a basic introduction to data simulation and parameter recovery in R for cross-sectional time series and non-nested data structures commonly encountered in political science and international relations.
 
-## Thinking About Relationships and Dependencies
+<p>Data simulation is easily near the top of the long list of useful skills that are seldom taught in social science graduate programs. This is unfortunate given the central role of simulation in model checking, sensitivity analysis, and developing a basic understanding of modeling assumptions and often complex relationships between the phenomena social scientists aspire to understand. My aim in this blog post is thus to provide a basic introduction to data simulation and parameter recovery in R for cross-sectional time series and non-nested data structures commonly encountered in political science and international relations.</p>
+<div id="thinking-about-relationships-and-dependencies" class="section level2">
+<h2>Thinking About Relationships and Dependencies</h2>
+<p>Directed Acylic Graphs (DAGs) provide a useful way for thinking about both simple and more complex relationships and dependencies among variables and it can often be helpful to graph out a structural model of the relationships you want to simulate. The <code>{dagitty}</code> and <code>{ggdag}</code> packages provide a straight forward approach to constructing DAGs directly R and I rely on them for the purposes herein <span class="citation">(<a href="#ref-Barrett2021" role="doc-biblioref">Barrett 2021</a>; <a href="#ref-Textor2016" role="doc-biblioref">Textor et al. 2016</a>)</span>. Imagine we are interested in estimating the causal effect of some time varying treatment <span class="math inline">\(X_{t}\)</span> on a continuous response <span class="math inline">\(Y_{t}\)</span> where the realized values of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> for each period <span class="math inline">\(t \in \{1,2,\dots,T\}\)</span> and unit <span class="math inline">\(j \in \{1,2,\dots,J\}\)</span> are a function of the treatment status for country <span class="math inline">\(j\)</span> at time <span class="math inline">\(t-1\)</span> and a vector of time varying confounders <span class="math inline">\(Z_{t}\)</span>. The figure below, loosely adapted from <span class="citation">Blackwell and Glynn (<a href="#ref-Blackwell2018" role="doc-biblioref">2018</a>)</span>, depicts such a data generation process.</p>
+<pre class="r"><code># Load the necessary libraries
+pacman::p_load(
+  &quot;tidyverse&quot;,
+  &quot;data.table&quot;,
+  &quot;dtplyr&quot;,
+  &quot;dagitty&quot;,
+  &quot;ggdag&quot;,
+  &quot;kableExtra&quot;,
+  install = FALSE
+)
 
-Directed Acylic Graphs (DAGs) provide a useful way for thinking about both simple and more complex relationships and dependencies among variables and it can often be helpful to graph out a structural model of the relationships you want to simulate. The `{dagitty}` and `{ggdag}` packages provide a straight forward approach to constructing DAGs directly R and I rely on them for the purposes herein ([Barrett 2021](#ref-Barrett2021); [Textor et al. 2016](#ref-Textor2016)). Imagine we are interested in estimating the causal effect of some time varying treatment `\(X_{t}\)` on a continuous response `\(Y_{t}\)` where the realized values of `\(X\)` and `\(Y\)` for each period `\(t \in \{1,2,\dots,T\}\)` and unit `\(j \in \{1,2,\dots,J\}\)` are a function of the treatment status for country `\(j\)` at time `\(t-1\)` and a vector of time varying confounders `\(Z_{t}\)`. The figure below, loosely adapted from Blackwell and Glynn ([2018](#ref-Blackwell2018)), depicts such a data generation process.
-
-``` r
 # Specify the DAG for the data generation process
-sim_dag <- dagify(
+sim_dag &lt;- dagify(
   x_t ~ x_tm1 + z_t + y_tm1,
   x_tm1 ~ x_tm2 + z_tm1 + y_tm2,
   x_t1 ~ x_t + y_t,
@@ -61,51 +70,40 @@ sim_dag <- dagify(
     y = c(z_tm2 = 0, z_tm1 = 0, z_t = 0, z_t1 = 0, x_tm2 = 4, 
           x_tm1 = 4, x_t = 4, x_t1 = 4, y_tm1 = 2, y_t = 2, y_tm2 = 2)
   ),
-  labels = c(z_tm2 = "bold(...)", x_tm2 = "bold(...)", 
-             z_t1 = "bold(...)", x_t1 = "bold(...)", 
-             x_tm1 = "bold(X[t - 1])", x_t = "bold(X[t])",
-             z_tm1 = "bold(Z[t - 1])", z_t = "bold(Z[t])", 
-             y_tm1 = "bold(Y[t - 1])", y_t = "bold(Y[t])", 
-             y_tm2 = "bold(Y[t - 2])"),
-  exposure = c("x_t"),
-  outcome = c("y_t")
-) %>% 
+  labels = c(z_tm2 = &quot;bold(...)&quot;, x_tm2 = &quot;bold(...)&quot;, 
+             z_t1 = &quot;bold(...)&quot;, x_t1 = &quot;bold(...)&quot;, 
+             x_tm1 = &quot;bold(X[t - 1])&quot;, x_t = &quot;bold(X[t])&quot;,
+             z_tm1 = &quot;bold(Z[t - 1])&quot;, z_t = &quot;bold(Z[t])&quot;, 
+             y_tm1 = &quot;bold(Y[t - 1])&quot;, y_t = &quot;bold(Y[t])&quot;, 
+             y_tm2 = &quot;bold(Y[t - 2])&quot;),
+  exposure = c(&quot;x_t&quot;),
+  outcome = c(&quot;y_t&quot;)
+) %&gt;% 
   # Create a tidy data frame from the DAG
-  tidy_dagitty() %>% 
+  tidy_dagitty() %&gt;% 
   # Set Node Status 
-  node_status() %>% 
+  node_status() %&gt;% 
   # Set node adjacency
-  node_ancestors(.var = "y_t") 
-```
-
-<img src="figures/Figure_1_DAG_Example.jpeg" width="100%" height="100%" style="display: block; margin: auto;" />
-
-There’s quite a bit going on here, so let’s break it down a bit. First, the solid blue line in figure 1 represents the causal path of interest `\(X_{t} \longrightarrow Y_{t}\)`. The dashed red lines indicate confounding paths–nodes that have a direct effect on both the outcome and the treatment–that need to be adjusted for to identify the contemporaneous effect of `\(X\)` on `\(Y\)` at each period `\(t\)`. As depicted in the DAG, the lag of the treatment `\(X_{t-1}\)` and the vector time-varying confounders `\(Z_{t}\)` constitute the minimum sufficient adjustment set necessary to identify the path `\(X_{t} \longrightarrow Y_{t}\)`. This is further illustrated in figure 2 below which shows the adjusted nodes in green, the causal path `\(X_{t} \longrightarrow Y_{t}\)` in blue, and nodes we do not need to adjust for to identify the effect of `\(X\)` on `\(Y\)` at time `\(t\)` in black.
-
-<img src="figures/Figure_2_DAG_Example.jpeg" width="100%" height="100%" style="display: block; margin: auto;" />
-
-We can also more directly verify sufficiency of the set `\(\{X_{t-1}, Z_{t}\}\)` using the `adjustmentSets` function from the `{dagitty}` package.[^1]
-
-``` r
-# Verify the minimum adjustment using dagitty
-adjustmentSets(sim_dag$dag, exposure = "x_t", outcome = "y_t")
-## { x_tm1, z_t }
-```
-
-While this is all rather abstract, it provides a useful way to think about potentially complex relationships between variables and how they all do or don’t fit into a particular model.
-
-## Simulating Cross-Sectional Time Series Data
-
-Having specified our dependencies and identified the main parameter(s) we intend to recover, the effect of `\(X_{t}\)` on `\(Y_{t}\)` at time `\(t\)`, we can simulate a series of datasets with dimensions similar to those encountered in real world social science applications. To begin, let’s specify the dimensions for each dataset as a tibble with two columns, Countries and Periods, and expand it by each possible combination. We’ll then add two additional columns, a unique identifier for each dataset and its total number of observations.
-
-``` r
-# Define the Dimensions for the Simulated Data
-sim_dims <- tibble(
+  node_ancestors(.var = &quot;y_t&quot;) </code></pre>
+<p><img src="figures/Figure_1_DAG_Example.jpeg" width="100%" height="100%" style="display: block; margin: auto;" /></p>
+<p>There’s quite a bit going on here, so let’s break it down a bit. First, the solid blue line in figure 1 represents the causal path of interest <span class="math inline">\(X_{t} \longrightarrow Y_{t}\)</span>. The dashed red lines indicate confounding paths–nodes that have a direct effect on both the outcome and the treatment–that need to be adjusted for to identify the contemporaneous effect of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> at each period <span class="math inline">\(t\)</span>. As depicted in the DAG, the lag of the treatment <span class="math inline">\(X_{t-1}\)</span> and the vector time-varying confounders <span class="math inline">\(Z_{t}\)</span> constitute the minimum sufficient adjustment set necessary to identify the path <span class="math inline">\(X_{t} \longrightarrow Y_{t}\)</span>. This is further illustrated in figure 2 below which shows the adjusted nodes in green, the causal path <span class="math inline">\(X_{t} \longrightarrow Y_{t}\)</span> in blue, and nodes we do not need to adjust for to identify the effect of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> at time <span class="math inline">\(t\)</span> in black.</p>
+<p><img src="figures/Figure_2_DAG_Example.jpeg" width="100%" height="100%" style="display: block; margin: auto;" /></p>
+<p>We can also more directly verify sufficiency of the set <span class="math inline">\(\{X_{t-1}, Z_{t}\}\)</span> using the <code>adjustmentSets</code> function from the <code>{dagitty}</code> package.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<pre class="r"><code># Verify the minimum adjustment using dagitty
+adjustmentSets(sim_dag$dag, exposure = &quot;x_t&quot;, outcome = &quot;y_t&quot;)
+## { x_tm1, z_t }</code></pre>
+<p>While this is all rather abstract, it provides a useful way to think about potentially complex relationships between variables and how they all do or don’t fit into a particular model.</p>
+</div>
+<div id="simulating-cross-sectional-time-series-data" class="section level2">
+<h2>Simulating Cross-Sectional Time Series Data</h2>
+<p>Having specified our dependencies and identified the main parameter(s) we intend to recover, the effect of <span class="math inline">\(X_{t}\)</span> on <span class="math inline">\(Y_{t}\)</span> at time <span class="math inline">\(t\)</span>, we can simulate a series of datasets with dimensions similar to those encountered in real world social science applications. To begin, let’s specify the dimensions for each dataset as a tibble with two columns, Countries and Periods, and expand it by each possible combination. We’ll then add two additional columns, a unique identifier for each dataset and its total number of observations.</p>
+<pre class="r"><code># Define the Dimensions for the Simulated Data
+sim_dims &lt;- tibble(
   Countries = seq(10, 85, 25),  # Number of Countries
   Periods = seq(12, 57, 15) # Number of Time Periods
-  ) |>
+  ) |&gt;
   # Expand the data for each combinations of dimensions
-  expand(Countries, Periods) |>
+  expand(Countries, Periods) |&gt;
   # Add Total Observations and a dataset ID
   mutate(N = Countries*Periods, data_id = 1:n())
 
@@ -113,32 +111,28 @@ sim_dims <- tibble(
 head(sim_dims)
 ## # A tibble: 6 x 4
 ##   Countries Periods     N data_id
-##       <dbl>   <dbl> <dbl>   <int>
+##       &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;   &lt;int&gt;
 ## 1        10      12   120       1
 ## 2        10      27   270       2
 ## 3        10      42   420       3
 ## 4        10      57   570       4
 ## 5        35      12   420       5
-## 6        35      27   945       6
-```
-
-To simulate the data for each combination of dimensions we can nest each row in the tibble by its country-period pair and then loop across performing the necessary operations via the `map` function from `{purrr}`. This approach is more computationally efficient in R than using for loops and relies primarily on the `{tidyverse}` package suite, though the difference is probably negligible for the purposes of this example. I assume the baseline data for each of the parameters follows a normal distribution with mean `\(\mu_{j}\)` and standard deviation `\(\sigma_{j}\)` where `\(\mu_{j} \sim \mathcal{N}(0, 1)\)` and `\(\sigma_{j} \sim \mathcal{Exponential}(\lambda = 0.5)\)` for each country `\(j\)`.
-
-``` r
-# Set the rng seed to ensure values are reproducible
+## 6        35      27   945       6</code></pre>
+<p>To simulate the data for each combination of dimensions we can nest each row in the tibble by its country-period pair and then loop across performing the necessary operations via the <code>map</code> function from <code>{purrr}</code>. This approach is more computationally efficient in R than using for loops and relies primarily on the <code>{tidyverse}</code> package suite, though the difference is probably negligible for the purposes of this example. I assume the baseline data for each of the parameters follows a normal distribution with mean <span class="math inline">\(\mu_{j}\)</span> and standard deviation <span class="math inline">\(\sigma_{j}\)</span> where <span class="math inline">\(\mu_{j} \sim \mathcal{N}(0, 1)\)</span> and <span class="math inline">\(\sigma_{j} \sim \mathcal{Exponential}(\lambda = 0.5)\)</span> for each country <span class="math inline">\(j\)</span>.</p>
+<pre class="r"><code># Set the rng seed to ensure values are reproducible
 set.seed(123456)
 
-sim_data <- sim_dims |> 
+sim_data &lt;- sim_dims |&gt; 
   # Nest the tibble by dataset
-  nest(data = c(Countries, Periods)) |>
+  nest(data = c(Countries, Periods)) |&gt;
   # Simulate each of the datasets
   mutate(datasets = map(
     .x = data,
-    ~ .x |>
+    ~ .x |&gt;
       # Expand the data intol panel format
-      expand_grid(country = 1:Countries, period = 1:Periods) |>
+      expand_grid(country = 1:Countries, period = 1:Periods) |&gt;
       # Group the data by country
-      group_by(country) |> 
+      group_by(country) |&gt; 
       # Simulate baseline values for the parameters
       mutate(
         # Baseline Values for Z
@@ -149,21 +143,21 @@ sim_data <- sim_dims |>
         Y_base = rnorm(n(), rnorm(1, 0, 1), rexp(1, 0.5)),
         # Lagged Baseline Values for Each of the Parameters
         across(
-          ends_with("_base"),
+          ends_with(&quot;_base&quot;),
           .fns = list(
             lag_1 = ~ lag(.x, n = 1L),
             lag_2 = ~ lag(.x, n = 2L)
           ),
-          .names = "{.col}_{.fn}"
+          .names = &quot;{.col}_{.fn}&quot;
         ),
         # Floor periods at 3 to accomodate the dropped lags
         across(c(period, Periods), ~ .x - 2)
-        ) |> 
+        ) |&gt; 
       # Ungroup the data
-      ungroup() |>
+      ungroup() |&gt;
       # Drop missing values
       drop_na()
-  )) |> 
+  )) |&gt; 
   # Unnest the dimensions columns
   unnest(cols = data)
 
@@ -171,50 +165,38 @@ sim_data <- sim_dims |>
 head(sim_data$datasets[[1]])
 ## # A tibble: 6 x 13
 ##   Countries Periods country period Z_base X_base Y_base Z_base_lag_1
-##       <dbl>   <dbl>   <int>  <dbl>  <dbl>  <dbl>  <dbl>        <dbl>
+##       &lt;dbl&gt;   &lt;dbl&gt;   &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;        &lt;dbl&gt;
 ## 1        10      10       1      1  -2.44  3.85  -0.845        -1.30
 ## 2        10      10       1      2  -1.59 -0.139  0.845        -2.44
 ## 3        10      10       1      3   1.43  3.06   2.29         -1.59
 ## 4        10      10       1      4   3.80 -2.57   3.61          1.43
 ## 5        10      10       1      5   4.00  0.773 -0.781         3.80
 ## 6        10      10       1      6  -1.31  2.26  -1.36          4.00
-## # ... with 5 more variables: Z_base_lag_2 <dbl>, X_base_lag_1 <dbl>,
-## #   X_base_lag_2 <dbl>, Y_base_lag_1 <dbl>, Y_base_lag_2 <dbl>
-```
-
-Now that we have a dataset with baseline values of `\(X\)`, `\(Z\)`, `\(Y\)`, and their lags for each of combination of dimensions, we can simulate “true” coefficient values for each of the vectors at time `\(t\)` and `\(t - 1\)`. In a real simulation study you would likely want to assign fixed values to the nuisance parameters and vary the magnitude of the effect of the treatment on the response but for the purpose here I’m just going to generate a vector of twenty random numbers from a uniform distribution.
-
-``` r
-# Simulate a vector of "true" coefficient values for each parameter
-beta <- runif(20, -5, 5)
-```
-
-We can then simulate the parameters of interest by simply following the paths on the DAG in figure 1 for each parameter, working our way from left to right. Alternatively, we could pass each of the parameters to the `ggdag::ggdag_parents` or `dagitty::parents` convenience functions to identify the parents of each node and specify the relationships accordingly.
-
-``` r
-# Character vector specifying nodes on the graph
-params <- c("x_tm1", "z_tm1", "y_tm1", "x_t", "z_t", "y_t")
+## # ... with 5 more variables: Z_base_lag_2 &lt;dbl&gt;, X_base_lag_1 &lt;dbl&gt;,
+## #   X_base_lag_2 &lt;dbl&gt;, Y_base_lag_1 &lt;dbl&gt;, Y_base_lag_2 &lt;dbl&gt;</code></pre>
+<p>Now that we have a dataset with baseline values of <span class="math inline">\(X\)</span>, <span class="math inline">\(Z\)</span>, <span class="math inline">\(Y\)</span>, and their lags for each of combination of dimensions, we can simulate “true” coefficient values for each of the vectors at time <span class="math inline">\(t\)</span> and <span class="math inline">\(t - 1\)</span>. In a real simulation study you would likely want to assign fixed values to the nuisance parameters and vary the magnitude of the effect of the treatment on the response but for the purpose here I’m just going to generate a vector of twenty random numbers from a uniform distribution.</p>
+<pre class="r"><code># Simulate a vector of &quot;true&quot; coefficient values for each parameter
+beta &lt;- runif(20, -5, 5)</code></pre>
+<p>We can then simulate the parameters of interest by simply following the paths on the DAG in figure 1 for each parameter, working our way from left to right. Alternatively, we could pass each of the parameters to the <code>ggdag::ggdag_parents</code> or <code>dagitty::parents</code> convenience functions to identify the parents of each node and specify the relationships accordingly.</p>
+<pre class="r"><code># Character vector specifying nodes on the graph
+params &lt;- c(&quot;x_tm1&quot;, &quot;z_tm1&quot;, &quot;y_tm1&quot;, &quot;x_t&quot;, &quot;z_t&quot;, &quot;y_t&quot;)
 
 # Get the parents for each node
-parent_nodes <- map(.x = params, ~ parents(sim_dag$dag, .x))
+parent_nodes &lt;- map(.x = params, ~ parents(sim_dag$dag, .x))
 
 # Set names for the nodes
-names(parent_nodes) <- params
+names(parent_nodes) &lt;- params
 
 # Print the parents for node X[t-1]
 parent_nodes$x_tm1
-## [1] "x_tm2" "y_tm2" "z_tm1"
-```
-
-The output tells us that `\(X_{t-1}\)` is a function of `\(X_{t-2}\)`, `\(Y_{t-2}\)`, and `\(Z_{t-1}\)` which we can express as its own equation along the lines of `\(X_{t-1} \sim \beta_{0} + \beta_{1}X_{t-2} + \beta_{2}Y_{t-2} + \beta_{3}Z_{t-1}\)`. We can repeat this process for each of the relationships defined in the DAG as shown in the code below.
-
-``` r
-# Simulate the model dependencies based on the DAG
-sim_df <- sim_data |> 
+## [1] &quot;x_tm2&quot; &quot;y_tm2&quot; &quot;z_tm1&quot;</code></pre>
+<p>The output tells us that <span class="math inline">\(X_{t-1}\)</span> is a function of <span class="math inline">\(X_{t-2}\)</span>, <span class="math inline">\(Y_{t-2}\)</span>, and <span class="math inline">\(Z_{t-1}\)</span> which we can express as its own equation along the lines of <span class="math inline">\(X_{t-1} \sim \beta_{0} + \beta_{1}X_{t-2} + \beta_{2}Y_{t-2} + \beta_{3}Z_{t-1}\)</span>. We can repeat this process for each of the relationships defined in the DAG as shown in the code below.</p>
+<pre class="r"><code># Simulate the model dependencies based on the DAG
+sim_df &lt;- sim_data |&gt; 
   mutate(
     datasets = map(
       .x = datasets,
-      ~ .x |>
+      ~ .x |&gt;
         transmute(
           # Identifiers
           across(Countries:period, ~ .x),
@@ -239,88 +221,58 @@ sim_df <- sim_data |>
 head(sim_df$datasets[[1]])
 ## # A tibble: 6 x 11
 ##   Countries Periods country period Y_Lag_2  Z_Lag  X_Lag  Y_Lag       Z       X
-##       <dbl>   <dbl>   <int>  <dbl>   <dbl>  <dbl>  <dbl>  <dbl>   <dbl>   <dbl>
+##       &lt;dbl&gt;   &lt;dbl&gt;   &lt;int&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
 ## 1        10      10       1      1  -1.20   -2.07   2.01  -2.33    4.71    47.0
 ## 2        10      10       1      2 -18.7   -31.9  -36.9   10.2   167.     623. 
 ## 3        10      10       1      3 -29.0   -50.1  -66.9   28.0   256.     850. 
 ## 4        10      10       1      4  -8.07  -13.4  -17.6    9.29   64.1    197. 
 ## 5        10      10       1      5  -0.180   7.77   4.84   4.76  -48.2   -240. 
 ## 6        10      10       1      6  35.3    66.1   87.1  -36.4  -337.   -1123. 
-## # ... with 1 more variable: Y <dbl>
-```
-
-Now that we’ve simulated the data, let’s check the true parameter values for `\(\beta_{15}\)` so we know what we’re aiming for.
-
-``` r
-# Check the parameter values for Y
+## # ... with 1 more variable: Y &lt;dbl&gt;</code></pre>
+<p>Now that we’ve simulated the data, let’s check the true parameter values for <span class="math inline">\(\beta_{15}\)</span> so we know what we’re aiming for.</p>
+<pre class="r"><code># Check the parameter values for Y
 beta[15:17]
-## [1] -2.3038987  0.2084644  0.8897939
-```
-
-If everything is specified correctly, the data generation process for `\(Y_{t}\)` should be `\(\beta_{0} -2.30 \cdot X_{t} + 0.21\cdot X_{t-1} + 0.89\cdot Z_{t} + \epsilon\)` where the causal effect of `\(X\)` on `\(Y\)` at time `\(t\)` is approximately `\(-2.30\)`. The function `bias_table` simply loops across each of the simulated data frames, estimating the specified models, and returning a tibble containing the estimates and absolute bias. As table 1 illustrates, we’re able to recover the true parameter value suggesting everything worked as intended.
-
-``` r
-param_recovery <- bias_table(
+## [1] -2.3038987  0.2084644  0.8897939</code></pre>
+<p>If everything is specified correctly, the data generation process for <span class="math inline">\(Y_{t}\)</span> should be <span class="math inline">\(\beta_{0} -2.30 \cdot X_{t} + 0.21\cdot X_{t-1} + 0.89\cdot Z_{t} + \epsilon\)</span> where the causal effect of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> at time <span class="math inline">\(t\)</span> is approximately <span class="math inline">\(-2.30\)</span>. The function <code>bias_table</code> simply loops across each of the simulated data frames, estimating the specified models, and returning a tibble containing the estimates and absolute bias. As table 1 illustrates, we’re able to recover the true parameter value suggesting everything worked as intended.</p>
+<pre class="r"><code>param_recovery &lt;- bias_table(
   .ols_equation = Y ~ X + X_Lag + Z, 
   .fe_equation = Y ~ X + X_Lag + Z + as.factor(country), 
   .re_equation = Y ~ X + X_Lag + Z + (1 | country),
   .data_list = sim_df$datasets, 
-  .term = "X", 
+  .term = &quot;X&quot;, 
   .truth = beta[15]
-)
-```
-
+)</code></pre>
 <table class=" lightable-classic" style="font-family: serif; margin-left: auto; margin-right: auto;border-bottom: 0;">
 <thead>
 <tr>
 <th style="empty-cells: hide;" colspan="3">
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="6">
-
 <div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
-
 Parameter Estimates
-
 </div>
-
 </th>
 </tr>
 <tr>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="3">
-
 <div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
-
 Dimensions
-
 </div>
-
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
-
 <div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
-
 Complete Pooling
-
 </div>
-
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
-
 <div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
-
 No Pooling
-
 </div>
-
 </th>
 <th style="padding-bottom:0; padding-left:3px;padding-right:3px;text-align: center; " colspan="2">
-
 <div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
-
 Partial Pooling
-
 </div>
-
 </th>
 </tr>
 <tr>
@@ -822,36 +774,30 @@ Bias
 <tfoot>
 <tr>
 <td style="padding: 0; " colspan="100%">
-<sup>1</sup> Bias is the difference between the true value of the parameter and the estimated coefficient for each dataset in absolute terms. The true parameter value for the effect of `\(X_{t}\)` on `\(Y_{t}\)` is approximately -2.3039.
+<sup>1</sup> Bias is the difference between the true value of the parameter and the estimated coefficient for each dataset in absolute terms. The true parameter value for the effect of <span class="math inline">\(X_{t}\)</span> on <span class="math inline">\(Y_{t}\)</span> is approximately -2.3039.
 </td>
 </tr>
 </tfoot>
 </table>
-
-And there you have it, a basic introduction to simulating data and parameter recovery using DAGs and the tidyverse. I’ll probably do a follow-up post in a few weeks that covers simulating discrete parameters such as binary treatments and responses.
-
-# References
-
+<p>And there you have it, a basic introduction to simulating data and parameter recovery using DAGs and the tidyverse. I’ll probably do a follow-up post in a few weeks that covers simulating discrete parameters such as binary treatments and responses.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent">
-
 <div id="ref-Barrett2021" class="csl-entry">
-
-Barrett, Malcolm. 2021. *Ggdag: Analyze and Create Elegant Directed Acyclic Graphs*. <https://CRAN.R-project.org/package=ggdag>.
-
+Barrett, Malcolm. 2021. <em>Ggdag: Analyze and Create Elegant Directed Acyclic Graphs</em>. <a href="https://CRAN.R-project.org/package=ggdag">https://CRAN.R-project.org/package=ggdag</a>.
 </div>
-
 <div id="ref-Blackwell2018" class="csl-entry">
-
-Blackwell, Matthew, and Adam N. Glynn. 2018. “How to Make Causal Inferences with Time-Series Cross-Sectional Data Under Selection on Observables.” *American Political Science Review* 112: 1067–82.
-
+Blackwell, Matthew, and Adam N. Glynn. 2018. <span>“How to Make Causal Inferences with Time-Series Cross-Sectional Data Under Selection on Observables.”</span> <em>American Political Science Review</em> 112: 1067–82.
 </div>
-
 <div id="ref-Textor2016" class="csl-entry">
-
-Textor, Johannes et al. 2016. “Robust Causal Inference Using Directed Acyclic Graphs: The r Package ’Dagitty’.” *International Journal of Epidemiology* 45(6): 1887–94.
-
+Textor, Johannes et al. 2016. <span>“Robust Causal Inference Using Directed Acyclic Graphs: The r Package ’Dagitty’.”</span> <em>International Journal of Epidemiology</em> 45(6): 1887–94.
 </div>
-
 </div>
-
-[^1]: This could also be obtained via {ggdag}’s `dag_adjustment_sets` or visually via `ggdag_adjustment_set`. See the [{ggdag} package site](https://ggdag.malco.io/) for more details
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>This could also be obtained via {ggdag}’s <code>dag_adjustment_sets</code> or visually via <code>ggdag_adjustment_set</code>. See the <a href="https://ggdag.malco.io/">{ggdag} package site</a> for more details<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
