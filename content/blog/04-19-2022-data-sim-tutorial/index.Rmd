@@ -430,6 +430,6 @@ kable(
   footnote(number = "Bias is the difference between the true value of the parameter and the estimated coefficient for each dataset in absolute terms. The true parameter value for the effect of $X_{t}$ on $Y_{t}$ is approximately -2.3039.")
 ```
 
-And there you have it, a basic introduction to simulating data and parameter recovery using DAGs and the tidyverse. I'll probably do a follow-up post in a few weeks that covers simulating discrete parameters such as binary treatments and responses.
+And there you have it, a basic introduction to simulating data and parameter recovery using DAGs and the tidyverse. I'll probably do a follow-up post in a few weeks that covers simulating discrete parameters such as binary treatments and responses. You can find all of the code not shown for the sake of brevity [on my github](https://github.com/ajnafa/ajnafa-website/blob/main/content/blog/04-19-2022-data-sim-tutorial/index.Rmd)
 
 # References
