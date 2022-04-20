@@ -11,7 +11,7 @@ h1 {
   font-style: bold;
   font-size: 40px;
   text-align: left;
-  width: 100%;
+  width: auto;
 }
 
 /* Author, Affiliation, and Subheader Font Settings */
@@ -20,7 +20,7 @@ h1 {
   font-weight: 600;
   font-style: normal;
   font-size: 30px;
-  width: 100%;
+  width: auto;
   display: table;
   align-items: center;
 }
@@ -41,6 +41,7 @@ body {
   font-style: normal;
   font-size: 20px;
   text-align: justify;
+  width: auto;
   padding-top: 0em;
 }
 

@@ -50,7 +50,7 @@ social:
 # To enable, copy your resume/CV to `static/files/cv.pdf`
 - icon: cv
   icon_pack: ai
-  link: "media/Nafa_Jordan_CV.pdf"
+  link: "uploads/Nafa_Jordan_CV_04-11-2022.pdf"
 
 # Organizational groups that you belong to (for People widget)
 #   Set this to `[]` or comment out if you are not using People widget.
@@ -59,4 +59,4 @@ user_groups:
 - Visitors
 ---
 
-I am a Doctoral Candidate in the [Department of Political Science](https://politicalscience.unt.edu/) at the [University of North Texas](https://www.unt.edu/). My current research is focused on the intersection of women in politics and political behavior with a particular emphasis on how descriptive representation influences individual attitudes and institutions. I apply Bayesian statistics and predictive modeling to examine the causes and consequences of gender-based inclusion across a wide range of contexts and have a general interest in the development and application of Bayesian inference in the social sciences. My teaching interests center around comparative political institutions and behavior, women in politics, and quantitative political methodology.
+I am a Doctoral Candidate in the [Department of Political Science](https://politicalscience.unt.edu/) at the [University of North Texas](https://www.unt.edu/). My current research is focused on the intersection of women in politics and political behavior with a particular emphasis on how descriptive representation influences individual attitudes and institutions. I apply Bayesian statistics and predictive modeling to examine the causes and consequences of gender-based inclusion across a wide range of contexts and have a general interest in the development and application of Bayesian inference in the social sciences. My teaching interests center around comparative political institutions and behavior, women in politics, quantitative political methodology, and scientific programming.
