@@ -21,8 +21,6 @@ bibliography: "../../../assets/bib/references.bib"
 csl: "../../../assets/bib/apsa.csl"
 css: "../../../assets/bib/style.css"
 math: true
-codefolding_show: hide
-codefolding_nobutton: false
 link-citations: yes
 reading_time: false
 commentable: true
