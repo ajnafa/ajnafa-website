@@ -70,7 +70,7 @@ bias_table <- function(.ols_equation, .fe_equation, .re_equation, .data_list, .t
       # Transmute the required columns
       transmute(
         countries = unique(.x$Countries),
-        periods = unique(.x$Periods + 1),
+        periods = unique(.x$Periods),
         N = countries*periods,
         ols_est = estimate,
         ols_bias = abs(estimate - .truth)
@@ -89,7 +89,7 @@ bias_table <- function(.ols_equation, .fe_equation, .re_equation, .data_list, .t
       # Transmute the required columns
       transmute(
         countries = unique(.x$Countries),
-        periods = unique(.x$Periods + 1),
+        periods = unique(.x$Periods),
         N = countries*periods,
         fe_est = estimate,
         fe_bias = abs(estimate - .truth)
@@ -108,7 +108,7 @@ bias_table <- function(.ols_equation, .fe_equation, .re_equation, .data_list, .t
       # Transmute the required columns
       transmute(
         countries = unique(.x$Countries),
-        periods = unique(.x$Periods + 1),
+        periods = unique(.x$Periods),
         N = countries*periods,
         re_est = estimate,
         re_bias = abs(estimate - .truth)
