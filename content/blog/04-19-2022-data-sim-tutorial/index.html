@@ -4,8 +4,10 @@ author: "A. Jordan Nafa"
 date: 2022-04-19
 year: "2022"
 month: "2022/04"
-summary: "An introduction to simulating cross-sectional time series data in R"
+summary: "A basic tutorial on simulating cross-sectional time series data based on directed acyclic graphs in R using tidyverse"
 type: docs
+images: 
+- /blog/04-19-2022-data-sim-tutorial/figures/Figure_2_DAG_Example.jpeg
 tags:
   - R
   - tidyverse
@@ -17,7 +19,7 @@ tags:
 slug: data_sim_tutorial
 bibliography: "../../../assets/bib/references.bib"
 csl: "../../../assets/bib/apsa.csl"
-css: "../../../assets/bib/style.css"
+css: "style.css"
 math: true
 link-citations: yes
 reading_time: false
@@ -34,7 +36,7 @@ header:
 
 <script src="{{< blogdown/postref >}}index_files/kePrint/kePrint.js"></script>
 <link href="{{< blogdown/postref >}}index_files/lightable/lightable.css" rel="stylesheet" />
-  <link rel="stylesheet" href="../../../assets/bib/style.css" type="text/css" />
+  <link rel="stylesheet" href="style.css" type="text/css" />
 
 
 <p>Data simulation is easily near the top of the long list of useful skills that are seldom taught in social science graduate programs. This is unfortunate given the central role of simulation in model checking, sensitivity analysis, and developing a basic understanding of modeling assumptions and often complex relationships between the phenomena social scientists aspire to understand. My aim in this blog post is thus to provide a basic introduction to data simulation and parameter recovery in R for cross-sectional time series and non-nested data structures commonly encountered in political science and international relations.</p>
@@ -78,11 +80,11 @@ sim_dag &lt;- dagify(
              y_tm2 = &quot;bold(Y[t - 2])&quot;),
   exposure = c(&quot;x_t&quot;),
   outcome = c(&quot;y_t&quot;)
-) %&gt;% 
+) |&gt; 
   # Create a tidy data frame from the DAG
-  tidy_dagitty() %&gt;% 
+  tidy_dagitty() |&gt; 
   # Set Node Status 
-  node_status() %&gt;% 
+  node_status() |&gt; 
   # Set node adjacency
   node_ancestors(.var = &quot;y_t&quot;) </code></pre>
 <p><img src="figures/Figure_1_DAG_Example.jpeg" width="100%" height="100%" style="display: block; margin: auto;" /></p>

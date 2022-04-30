@@ -4,8 +4,10 @@ author: "A. Jordan Nafa"
 date: 2022-04-19
 year: "2022"
 month: "2022/04"
-summary: "An introduction to simulating cross-sectional time series data in R"
+summary: "A basic tutorial on simulating cross-sectional time series data based on directed acyclic graphs in R using tidyverse"
 type: docs
+images: 
+- /blog/04-19-2022-data-sim-tutorial/figures/Figure_2_DAG_Example.jpeg
 tags:
   - R
   - tidyverse
@@ -17,7 +19,7 @@ tags:
 slug: data_sim_tutorial
 bibliography: "../../../assets/bib/references.bib"
 csl: "../../../assets/bib/apsa.csl"
-css: "../../../assets/bib/style.css"
+css: "style.css"
 math: true
 link-citations: yes
 reading_time: false
@@ -164,11 +166,11 @@ sim_dag <- dagify(
              y_tm2 = "bold(Y[t - 2])"),
   exposure = c("x_t"),
   outcome = c("y_t")
-) %>% 
+) |> 
   # Create a tidy data frame from the DAG
-  tidy_dagitty() %>% 
+  tidy_dagitty() |> 
   # Set Node Status 
-  node_status() %>% 
+  node_status() |> 
   # Set node adjacency
   node_ancestors(.var = "y_t") 
 ```

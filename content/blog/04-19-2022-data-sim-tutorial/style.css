@@ -15,32 +15,11 @@ h1 {
 }
 
 /* Author, Affiliation, and Subheader Font Settings */
-.author {
-  font-family: 'EB Garamond', serif;
-  font-weight: 600;
-  font-style: normal;
-  font-size: 30px;
-  width: auto;
-  display: table;
-  text-align: center;
-  align-items: center;
-}
-
-/* Author, Affiliation, and Subheader Font Settings */
-h2 {
+h2, h3 {
   font-family: 'EB Garamond', serif;
   font-weight: 600;
   font-size: 30px;
-  text-align: center;
-  width: auto;
-}
-
-h3 {
-  font-family: 'EB Garamond', serif;
-  font-style: normal;
-  font-weight: 600;
-  font-size: 30px;
-  text-align: center;
+  text-align: left;
   width: auto;
 }
 
@@ -54,5 +33,3 @@ body {
   width: auto;
   padding-top: 0em;
 }
-
-
