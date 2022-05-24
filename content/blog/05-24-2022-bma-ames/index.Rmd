@@ -18,7 +18,7 @@ tags:
   - data visualization
   - model averaging
   - political science
-slug: bma_ames
+slug: bma-ames
 bibliography: "../../../assets/bib/references.bib"
 csl: "../../../assets/bib/apsa.csl"
 css: "style.css"
@@ -157,7 +157,7 @@ pacman::p_load(
 )
 
 # Set the base directory
-base_dir <- "content/blog/05-20-2022-bma-ames/"
+base_dir <- "content/blog/05-24-2022-bma-ames/"
 
 ## Load the Pro-Processed Data for the Main Analysis----
 df <- read_rds(str_c(base_dir, "assets/Main_Project_Data.RDS"))
@@ -413,7 +413,7 @@ summary(bma_contrasts_femrebels)
 suppressWarnings(library(marginaleffects))
 
 # Read in the contrasts
-bma_contrasts_femrebels <- readr::read_rds("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-20-2022-bma-ames/assets/output/BMA_Contrasts_Female_Rebels.rds")
+bma_contrasts_femrebels <- readr::read_rds("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-24-2022-bma-ames/assets/output/BMA_Contrasts_Female_Rebels.rds")
 
 ## Print the output of comparisons
 summary(bma_contrasts_femrebels)
@@ -510,7 +510,7 @@ summary(stacking_contrasts_femrebels)
 
 ```{r, echo=FALSE}
 # Read in the contrasts
-stacking_contrasts_femrebels <- readRDS("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-20-2022-bma-ames/assets/output/Stacking_Contrasts_Female_Rebels.rds")
+stacking_contrasts_femrebels <- readRDS("assets/output/Stacking_Contrasts_Female_Rebels.rds")
 
 ## Print the output of comparisons
 summary(stacking_contrasts_femrebels)
@@ -549,7 +549,7 @@ summary(pbma_contrasts_femrebels)
 
 ```{r, echo=FALSE}
 # Read in the contrasts
-pbma_contrasts_femrebels <- readRDS("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-20-2022-bma-ames/assets/output/Pseudo-BMA_Contrasts_Female_Rebels.rds")
+pbma_contrasts_femrebels <- readRDS("assets/output/Pseudo-BMA_Contrasts_Female_Rebels.rds")
 
 ## Print the output of comparisons
 summary(pbma_contrasts_femrebels)
@@ -588,7 +588,7 @@ summary(kfold_contrasts_femrebels)
 
 ```{r, echo=FALSE}
 # Read in the contrasts
-kfold_contrasts_femrebels <- readRDS("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-20-2022-bma-ames/assets/output/ELOO-CV_Contrasts_Female_Rebels.rds")
+kfold_contrasts_femrebels <- readRDS("assets/output/ELOO-CV_Contrasts_Female_Rebels.rds")
 
 ## Print the output of comparisons
 summary(kfold_contrasts_femrebels)
@@ -597,10 +597,10 @@ summary(kfold_contrasts_femrebels)
 We see that each of these approaches gives more or less the same answer--I have yet to personally encounter a case involving real data in which stacking and BMA based approaches differ wildly in the answers they provide. To get a closer look of where the slight differences are coming from, we can look at the model weights derived from each method.
 
 ```{r, echo=FALSE}
-femrebels_stacking_weights <- readRDS("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-20-2022-bma-ames/assets/output/Stacking_Weights.rds")
-femrebels_pbma_weights <- readRDS("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-20-2022-bma-ames/assets/output/Pseudo-BMAPlus_Weights.rds")
-femrebels_kfold_weights <- readRDS("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-20-2022-bma-ames/assets/output/ELOO-CV_Weights.rds")
-femrebels_postprob_weights <- readRDS("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-20-2022-bma-ames/assets/output/PostProb_Weights.rds")
+femrebels_stacking_weights <- readRDS("assets/output/Stacking_Weights.rds")
+femrebels_pbma_weights <- readRDS("assets/output/Pseudo-BMAPlus_Weights.rds")
+femrebels_kfold_weights <- readRDS("assets/output/ELOO-CV_Weights.rds")
+femrebels_postprob_weights <- readRDS("assets/output/PostProb_Weights.rds")
 ```
 
 ```{r}
