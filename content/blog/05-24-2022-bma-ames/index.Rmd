@@ -17,6 +17,7 @@ tags:
   - statistics
   - data visualization
   - model averaging
+  - marginal effects
   - political science
 slug: bma-ames
 bibliography: "../../../assets/bib/references.bib"
@@ -156,11 +157,8 @@ pacman::p_load(
   install = FALSE
 )
 
-# Set the base directory
-base_dir <- "content/blog/05-24-2022-bma-ames/"
-
-## Load the Pro-Processed Data for the Main Analysis----
-df <- read_rds(str_c(base_dir, "assets/Main_Project_Data.RDS"))
+## Load the Pre-Processed Data for the Main Analysis----
+df <- read_rds("assets/Main_Project_Data.RDS")
 
 ### Model data with female combatants (including suicide bombers)----
 model_df_a <- df %>% 
@@ -413,7 +411,7 @@ summary(bma_contrasts_femrebels)
 suppressWarnings(library(marginaleffects))
 
 # Read in the contrasts
-bma_contrasts_femrebels <- readr::read_rds("E:/Users/Dropbox/Personal-Website/ajnafa-website/content/blog/05-24-2022-bma-ames/assets/output/BMA_Contrasts_Female_Rebels.rds")
+bma_contrasts_femrebels <- readRDS("assets/output/BMA_Contrasts_Female_Rebels.rds")
 
 ## Print the output of comparisons
 summary(bma_contrasts_femrebels)
@@ -458,7 +456,7 @@ ggplot(data = bma_contrasts_draws, aes(x = draw)) +
 knitr::include_graphics(path = "assets/figures/Figure_2_BAMEs_Female_Combatants.jpeg")
 ```
 
-### Pseudo-BMA+/Stacking
+### Pseudo-BMA+ and Stacking
 
 Turning to the alternatives to traditional BMA proposed by @Yao2018, we begin by calculating the pointwise log likelihood and relative efficiency for each model in the set under consideration as shown in the documentation for the `loo` package [@Vehtari2020].
 
