@@ -7,7 +7,7 @@ month: "2022/05"
 summary: "An Introduction to Bayesian Model Averaged Marginal Effects (BMAMEs) with `{brms}` and `{marginaleffects}`"
 type: docs
 images: 
-- /blog/2022/05/20/bma-ames/assets/figures/Figure_2_BAMEs_Female_Combatants.jpeg
+- /blog/2022/05/24/bma-ames/assets/figures/Figure_2_BAMEs_Female_Combatants.jpeg
 tags:
   - R
   - brms

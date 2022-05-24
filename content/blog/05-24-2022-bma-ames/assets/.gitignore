@@ -1,3 +1,4 @@
 # Need to ignore these folders due to file size limits
 models
 output
+scripts
