@@ -1,5 +1,6 @@
 ---
 title: "An Introduction to Being Less Wrong: Bayesian Model Averaged Marginal Effects"
+author: "A. Jordan Nafa"
 date: 2022-05-20
 year: "2022"
 month: "2022/05"
@@ -21,10 +22,16 @@ csl: "../../../assets/bib/apsa.csl"
 css: "style.css"
 math: true
 link-citations: yes
-reading_time: true
+reading_time: false
 commentable: true
+highlight: true
+highlight_style: "monokai"
 editor_options:
   chunk_output_type: console
+draft: false
+header:
+  caption: ''
+  image: ''
 ---
 
 ```{css, echo=FALSE}
