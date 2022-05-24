@@ -616,6 +616,6 @@ The output above is quite informative in highlighting where the differences lie-
 
 ## Concluding Thoughts
 
-This concludes this breif illustration of BMA with `{brms}` and `{marginaleffects}`, though there will almost certainly be subsequent additions and further posts on this topic. The general idea is that selecting a single model is usually the wrong approach and there is seldom any need to do so. By applying probability theory to average across posterior distributions when estimating average effects, we can obtain interpretable model averaged estimates. Finally, remember that *friends don't let friends do stepwise regression*.
+This concludes this brief illustration of BMA with `{brms}` and `{marginaleffects}`, though there will almost certainly be subsequent additions and further posts on this topic. The general idea is that selecting a single model is usually the wrong approach and there is seldom any need to do so. By applying probability theory to average across posterior distributions when estimating average effects, we can obtain interpretable model averaged estimates. Finally, remember that *friends don't let friends do stepwise regression*.
 
 ## References
