@@ -7,7 +7,7 @@ month: "2022/05"
 summary: "An Introduction to Bayesian Model Averaged Marginal Effects (BMAMEs) with `{brms}` and `{marginaleffects}`"
 type: docs
 images: 
-- /blog/05-20-2022-bma-ames/assets/figures/Figure_2_BAMEs_Female_Combatants.jpeg
+- /blog/2022/05/20/bma-ames/assets/figures/Figure_2_BAMEs_Female_Combatants.jpeg
 tags:
   - R
   - brms
@@ -18,7 +18,7 @@ tags:
   - data visualization
   - model averaging
   - political science
-slug: bma-ames
+slug: bma_ames
 bibliography: "../../../assets/bib/references.bib"
 csl: "../../../assets/bib/apsa.csl"
 css: "style.css"
@@ -191,7 +191,7 @@ model_df_b <- df %>%
 
 ### Priors
 
-For the purposes of this example, I estimate a series of Bayesian logistic regression models whose coefficients are assigned independent normal priors with mean 0 and standard deviation $\frac{3}{4}$. In practical terms, these are weakly to moderately informative insofar as they are agnostic about the direction of the effect but concentrate 95% of the probability mass in the range of $\pm 1.5$ on the logit scale.
+For the purposes of this example, I estimate a series of Bayesian logistic regression models whose coefficients are assigned independent normal priors with mean 0 and standard deviation $\frac{3}{4}$. In practical terms, these are weakly to moderately informative insofar as they are agnostic about the direction of the effect but concentrate 95% of the probability mass in the range of $\pm 1.5$ on the logit scale. We'll place a slightly wider prior from a T distribution on the overall intercept term $\alpha$ and then, since this is all fairly abstract, we can visualize the prior distributions as shown below.
 
 $$
 \begin{aligned}
