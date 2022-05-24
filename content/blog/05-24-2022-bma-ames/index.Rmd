@@ -65,7 +65,7 @@ The first section provides a brief overview of BMA in the context of political s
 
 ## Approaches to Bayesian Model Averaging for Political Research
 
-Despite it's introduction to the discipline more than two decades ago by @Bartels1997, applications of BMA in political science remain rare and are largely confined to the topic of political methodology [@Juhl2019; @Cranmer2015; @Montgomery2010]. This presents something of a problem given the numerous studies demonstrating the dangers of tossing a large number of likely correlated predictors into a regression model [@Achen2005; @Clarke2005; @Clarke2009; @Montgomery2018]; the reality that if we wish to adjudicate between two or more competing theories comparing coefficients in a single model is generally insufficient to accomplish such a task [@Imai2011; @Clarke2007; @Hollenbach2020]; and the difficulty of assessing what we actually known about political phenomenon that results from an obsession with statistically significance rather than predictive validity [@Ward2010; @Cranmer2017; @Schrodt2014]. BMA provides a natural and intuitive way of resolving many of these issues and tends to have a substantially lower false positive rate than alternative approaches [@Pluemper2018]. 
+Despite it's introduction to the discipline more than two decades ago by @Bartels1997, applications of BMA in political science remain rare and are largely confined to the topic of political methodology [@Juhl2019; @Cranmer2015; @Montgomery2010]. This presents something of a problem given the numerous studies demonstrating the dangers of tossing a large number of likely correlated predictors into a regression model [@Achen2005; @Clarke2005; @Clarke2009; @Montgomery2018]; the reality that if we wish to adjudicate between two or more competing theories comparing coefficients in a single model is generally insufficient to accomplish such a task [@Imai2011; @Clarke2007; @Hollenbach2020]; and the difficulty of assessing what we truly known about political phenomenon that results from an obsession with statistical significance rather than predictive validity [@Ward2010; @Cranmer2017; @Schrodt2014]. Model averaging provides a natural and intuitive way of resolving many of these issues and tends to have a substantially lower false positive rate than alternative approaches [@Pluemper2018]. 
 
 ### Bayesian Model Averaging
 
@@ -88,7 +88,7 @@ $$
 \Pr(\mathcal{M}_{i} \,|\, y) = \frac{p(y \, | \, \mathcal{M}_{i}) \, \cdot \, \pi(\mathcal{M}_{i})}{\displaystyle\sum^{\mathcal{m}}_{k=1} p(y \, | \, \mathcal{M}_{k}) \, \cdot \, \pi(\mathcal{M}_{k})}
 $$
 
-By repeating this calculation for each model $i \in \{1,2,\dots,\mathcal{M}\}$ we obtain a vector of weights of length $\mathcal{M}$. We can then take $n$ random draws from the posterior predictive distribution of each model where $n$ is proportional to its respective posterior model probability weight, resulting in a weighted average of the posterior distributions that accounts for uncertainty in the model selection process.
+By repeating this calculation for each model $i \in \{1,2,\dots,\mathcal{M}\}$, we obtain a vector of weights of length $\mathcal{M}$. We can then take $n$ random draws from the posterior predictive distribution of each model where $n$ is proportional to its respective posterior model probability weight, resulting in a weighted average of the posterior distributions that accounts for uncertainty in the model selection process.
 
 ### Issues with BMA and Alternative Approaches to Weighting
 
