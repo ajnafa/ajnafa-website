@@ -612,7 +612,7 @@ tibble::tibble(
 )
 ```
 
-The output above is quite informative in highlighting where the differences lie--the two stacking-based approaches are selecting a single model with probability 1. This may be preferable under some circumstances and less so in others depending on the research question and inferential goals. Traditional BMA and pseudo-BMA with Bayesian Boostrap produce virtually identical estimates for the weights.
+The output above is quite informative in highlighting where the differences lie--the two stacking-based approaches are selecting a single model with probability 1. This may be preferable under some circumstances and less so in others depending on the research question and inferential goals. Traditional BMA and pseudo-BMA with Bayesian Bootstrap produce virtually identical estimates for the weights.
 
 ## Concluding Thoughts
 
