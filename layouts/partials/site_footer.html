@@ -3,10 +3,6 @@
   <!-- Init code folding -->
 {{ partial "article_footer_js.html" . }}
 
-  <!-- Google Analytics -->
-{{ partial "marketing/google_analytics.html" . }}
-{{ partial "marketing/google_tag_manager.html" . }}
-
   <p class="powered-by">
     {{ with site.Copyright }}{{ replace . "{year}" now.Year | markdownify}}{{ end }}
   </p>
