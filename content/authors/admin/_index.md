@@ -18,7 +18,7 @@ organizations:
   url: "https://politicalscience.unt.edu/people/adam-jordan-nafa"
 
 # Short bio (displayed in user profile at end of posts)
-bio: A. Jordan Nafa is a Doctoral Candidate in the Department of Political Science at the University of North Texas. His research focuses on women in politics and comparative political behavior with a particular emphasis on how descriptive representation influences individual attitudes and institutions.
+bio: A. Jordan Nafa is a Doctoral Candidate in the Department of Political Science at the University of North Texas. His research and teaching interests center broadly on women in politics, comparative political behavior, representation, and the application of Bayesian statistics in the social sciences.
 
 interests:
 - Political Representation
