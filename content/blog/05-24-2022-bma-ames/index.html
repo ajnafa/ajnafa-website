@@ -50,48 +50,47 @@ header:
 </style>
 <p>As George E. P. Box famously posed the problem, “all models are wrong, but some models are useful” and thus the fundamental question practitioners of applied statistics are faced with is <em>how wrong can we be less wrong?</em> This question tends to be a recurring theme of my own dissertation research, which makes extensive use of various approaches to Bayesian Model Averaging (BMA) in pursuit of this end one of which is Bayesian Model Averaged Marginal Effects (BMAMEs). Thanks to Vincent Arel-Bundock’s help the <code>{marginaleffects}</code> R package now has an implementation for estimating BMAMEs that works with any model fit with <code>{brms}</code> <span class="citation">(<a href="#ref-ArelBundock2022" role="doc-biblioref">Arel-Bundock 2022</a>; <a href="#ref-Buerkner2017" role="doc-biblioref">Bürkner 2017</a>, <a href="#ref-Buerkner2018" role="doc-biblioref">2018</a>)</span>. This blog post is designed to serve as a general demonstration of how to propagate uncertainty in the process of model selection forward when estimating average marginal effects for Bayesian regression models.</p>
 <div class="a">
-<p>The first section provides a brief overview of BMA in the context of political science, its advantages and shortcomings, and recently proposed alternative approaches that may help overcome some of the issues with traditional BMA <span class="citation">(e.g., <a href="#ref-Yao2018" role="doc-biblioref">Yao et al. 2018</a>)</span>. In the second half of the post, I turn to a demonstration and comparison of each of the approaches to BMAMEs supported by <code>{marginaleffects}</code> based on an applied example from the second chapter of my dissertation which examines how the participation of women in combat during civil wars shapes the transition of former rebel groups to political parties at wars end <span class="citation">(<a href="#ref-Nafa2022" role="doc-biblioref">Nafa and Roark 2022</a>)</span>. While no approach to estimation is perfect, BMA and its variants provide a principled, relatively robust way to propagate uncertainty in quantities typically of interest to researchers in the social sciences and are capable of helping us avoid unnecessary dichotomies that are, in most cases, false.</p>
+<p>The first section provides a brief overview of BMA in the context of political science, its advantages and shortcomings, and recently proposed alternative approaches that may help overcome some of the issues with traditional BMA <span class="citation">(e.g., <a href="#ref-Yao2018" role="doc-biblioref">Yao et al. 2018</a>)</span>. In the second half of the post, I turn to a demonstration and comparison of each of the approaches to BMAMEs supported by <code>{marginaleffects}</code> based on an applied example from the second chapter of my dissertation which examines how the participation of women in combat during civil wars shapes the transition of former rebel groups to political parties at wars end <span class="citation">(<a href="#ref-Nafa2022" role="doc-biblioref">Nafa and Roark 2022</a>)</span>.</p>
 </div>
 <div id="approaches-to-bayesian-model-averaging-for-political-research" class="section level2">
 <h2>Approaches to Bayesian Model Averaging for Political Research</h2>
 <p>Despite it’s introduction to the discipline more than two decades ago by <span class="citation">Bartels (<a href="#ref-Bartels1997" role="doc-biblioref">1997</a>)</span>, applications of BMA in political science remain rare and are largely confined to the topic of political methodology <span class="citation">(<a href="#ref-Cranmer2015" role="doc-biblioref">Cranmer, Rice, and Siverson 2015</a>; <a href="#ref-Juhl2019" role="doc-biblioref">Juhl 2019</a>; <a href="#ref-Montgomery2010" role="doc-biblioref">Montgomery and Nyhan 2010</a>)</span>. This presents something of a problem given the numerous studies demonstrating the dangers of tossing a large number of likely correlated predictors into a regression model <span class="citation">(<a href="#ref-Achen2005" role="doc-biblioref">Achen 2005</a>; <a href="#ref-Clarke2005" role="doc-biblioref">Clarke 2005</a>, <a href="#ref-Clarke2009" role="doc-biblioref">2009</a>; <a href="#ref-Montgomery2018" role="doc-biblioref">Montgomery, Nyhan, and Torres 2018</a>)</span>; the reality that if we wish to adjudicate between two or more competing theories comparing coefficients in a single model is generally insufficient to accomplish such a task <span class="citation">(<a href="#ref-Clarke2007" role="doc-biblioref">Clarke 2007</a>; <a href="#ref-Hollenbach2020" role="doc-biblioref">Hollenbach and Montgomery 2020</a>; <a href="#ref-Imai2011" role="doc-biblioref">Imai and Tingley 2011</a>)</span>; and the difficulty of assessing what we truly known about political phenomenon that results from an obsession with statistical significance rather than predictive validity <span class="citation">(<a href="#ref-Cranmer2017" role="doc-biblioref">Cranmer and Desmarais 2017</a>; <a href="#ref-Schrodt2014" role="doc-biblioref">Schrodt 2014</a>; <a href="#ref-Ward2010" role="doc-biblioref">Ward, Greenhill, and Bakke 2010</a>)</span>. Model averaging provides a natural and intuitive way of resolving many of these issues and tends to have a substantially lower false positive rate than alternative approaches <span class="citation">(<a href="#ref-Pluemper2018" role="doc-biblioref">Plümper and Traunmüller 2018</a>)</span>.</p>
 <div id="bayesian-model-averaging" class="section level3">
 <h3>Bayesian Model Averaging</h3>
-<p>In contrast to Montgomery and Nyhan’s <span class="citation">(<a href="#ref-Montgomery2010" role="doc-biblioref">2010</a>)</span> suggestion that “BMA is best used as a subsequent robustness check to show that our inferences are not overly sensitive to plausible variations in model specification” (266), model averaging can and should be used as far more than a robustness check. Consider a case in which we have a set of <span class="math inline">\(\mathcal{M}\)</span> possible models, each of which characterizes a given theoretical hypothesis about the process that generated the observed data <span class="math inline">\(y\)</span>. In the case of only two models competing models, the posterior odds of a given model <span class="math inline">\(i\)</span> relative to an alternative <span class="math inline">\(k\)</span> is</p>
+<p>Although <span class="citation">Montgomery and Nyhan (<a href="#ref-Montgomery2010" role="doc-biblioref">2010</a>)</span> suggest “BMA is best used as a subsequent robustness check to show that our inferences are not overly sensitive to plausible variations in model specification” (266), model averaging can and should be used as far more than a robustness check. Consider a case in which we have a set of <span class="math inline">\(\mathcal{M}\)</span> models, each of which characterizes a possible explanation for the process that generated the observed data <span class="math inline">\(y\)</span>. While it remains common practice in political science to select a single model based on a largely arbitrary fit statistic (i.e., AIC, <span class="math inline">\(\chi^{2}\)</span>, etc.), such an approach is problematic since it ignores the uncertainty inherent in the process of model selection. Rather than selecting a single model, BMA and it’s alternatives provide a means of averaging across several possible potentially non-nested model specifications and accounting for the uncertainty associated with doing so. For simplicity, consider the case of only two competing models where the posterior odds of model <span class="math inline">\(i\)</span> relative to an alternative <span class="math inline">\(k\)</span> can be expressed as</p>
 <p><span class="math display">\[
 \underbrace{\frac{p(\mathcal{M}_{i} \, | \, y)}{p(\mathcal{M}_{k} \, | \, y)}}_{\text{Posterior Odds}} = \underbrace{\frac{p(y \, | \, \mathcal{M}_{i})}{p(y \, | \, \mathcal{M}_{k})}}_{\text{Bayes Factor}} \times \underbrace{\frac{\pi(\mathcal{M}_{i})}{\pi(\mathcal{M}_{k})}}_{\text{Model Prior}}
 \]</span>
-where <span class="math inline">\(p(y \,|\, \mathcal{M})\)</span> is the marginal likelihood of the observed data under each of the candidate models and may be expressed as</p>
+where <span class="math inline">\(\pi(\mathcal{M})\)</span> is the prior probability of model <span class="math inline">\(i\)</span> over model <span class="math inline">\(k\)</span> and <span class="math inline">\(p(y \,|\, \mathcal{M})\)</span> is the marginal likelihood of the observed data under each of the candidate models such that</p>
 <p><span class="math display">\[
 \underbrace{p(y \,|\, \mathcal{M})}_{\text{Marginal Likelihood}} = \int\underbrace{p(y \,|\, \theta,\, \mathcal{M})}_{\text{Likelihood}} \, \underbrace{\pi(\theta \,|\, \mathcal{M})}_{\text{Prior}}d\theta
 \]</span></p>
 <div class="a">
-<p>In practice, for all but the simplest models deriving this integral analytically is computationally intractable and it is necessary to rely on algorithmic approximations such as bridge sampling <span class="citation">(<a href="#ref-Gelman1998" role="doc-biblioref">Gelman and Meng 1998</a>; <a href="#ref-Gronau2017" role="doc-biblioref">Gronau et al. 2017</a>; <a href="#ref-Wang2020" role="doc-biblioref">Wang, Jones, and Meng 2020</a>)</span>, some of the limits of which I discuss in further detail below. Extending this to the setting in which <span class="math inline">\(\mathcal{M_{k}}\)</span> is a set of plausible competing models of size <span class="math inline">\(k &gt; 1\)</span>, the posterior model probability of the <span class="math inline">\(i^{th}\)</span> model relative to the set of alternatives <span class="math inline">\(\mathcal{M_{k}}\)</span> is</p>
+<p>Note that in practice, for all but the simplest models deriving this integral analytically is computationally intractable and it is thus necessary to rely on algorithmic approximations such as bridge sampling <span class="citation">(<a href="#ref-Gelman1998" role="doc-biblioref">Gelman and Meng 1998</a>; <a href="#ref-Gronau2017" role="doc-biblioref">Gronau et al. 2017</a>; <a href="#ref-Wang2020" role="doc-biblioref">Wang, Jones, and Meng 2020</a>)</span>, some of the limits of which I discuss in further detail below. Extending this example to the setting in which <span class="math inline">\(\mathcal{M_{k}}\)</span> is a set of plausible competing models of size <span class="math inline">\(k &gt; 1\)</span>, the posterior model probability of the <span class="math inline">\(i^{th}\)</span> model relative to the set of alternatives <span class="math inline">\(\mathcal{M_{k}}\)</span> can be written as</p>
 </div>
 <p><span class="math display">\[
 \Pr(\mathcal{M}_{i} \,|\, y) = \frac{p(y \, | \, \mathcal{M}_{i}) \, \cdot \, \pi(\mathcal{M}_{i})}{\displaystyle\sum^{\mathcal{m}}_{k=1} p(y \, | \, \mathcal{M}_{k}) \, \cdot \, \pi(\mathcal{M}_{k})}
 \]</span></p>
-<p>By repeating this calculation for each model <span class="math inline">\(i \in \{1,2,\dots,\mathcal{M}\}\)</span>, we obtain a vector of weights of length <span class="math inline">\(\mathcal{M}\)</span>. We can then take <span class="math inline">\(n\)</span> random draws from the posterior predictive distribution of each model where <span class="math inline">\(n\)</span> is proportional to its respective posterior model probability weight, resulting in a weighted average of the posterior distributions that accounts for uncertainty in the model selection process.</p>
+<div class="a">
+<p>By repeating this calculation for each model <span class="math inline">\(i \in \{1,2,\dots,\mathcal{M}\}\)</span>, we obtain a vector of weights of length <span class="math inline">\(\mathcal{M}\)</span>. We can then take <span class="math inline">\(n\)</span> random draws from the posterior predictive distribution of each model where <span class="math inline">\(n\)</span> is proportional to its respective posterior model probability weight, resulting in a weighted average of the posterior distributions for each model in the set. Although the primary focus in this post if on BMAMEs, it is also possible to obtain a model averaged posterior distribution for some regression coefficient <span class="math inline">\(\beta\)</span> <span class="citation">(<a href="#ref-Montgomery2010" role="doc-biblioref">Montgomery and Nyhan 2010</a>)</span>. Given the posterior model probability weights, we can estimate the posterior predictive distribution of <span class="math inline">\(\beta\)</span> as</p>
 </div>
-<div id="issues-with-bma-and-alternative-approaches-to-weighting" class="section level3">
-<h3>Issues with BMA and Alternative Approaches to Weighting</h3>
-<p>The traditional approach to BMA is not without problems, at least three of which are notable and warrant some discussion. First, traditional BMA rests upon a closed-<span class="math inline">\(\mathcal{M}\)</span> assumption–that is, the “true” model is among those under consideration in the set of candidate models <span class="math inline">\(\mathcal{M}\)</span>. In the open-<span class="math inline">\(\mathcal{M}\)</span> setting which arises when the “true” model is not among those under consideration, as will generally be the case in any social science application, the traditional approach to BMA is flawed and estimated effects based on posterior probability weights are likely to be biased <span class="citation">(<a href="#ref-Hollenbach2020" role="doc-biblioref">Hollenbach and Montgomery 2020</a>; <a href="#ref-Yao2018" role="doc-biblioref">Yao et al. 2018</a>)</span>. The extent to which this presents a problem depends on the nature of the research question and the inferential goals of the researcher, but it is generally advisable to undertake some form of sensitivity analysis to ensure the analyst’s substantive conclusions are not sensitive to violations of the closed-<span class="math inline">\(\mathcal{M}\)</span> assumption.</p>
+<p><span class="math display">\[
+E(\beta \, | \, y) = \sum_{k=1}^{m}\Pr(\mathcal{M}_{k} \, | \, y)E(\beta_{k}\, |\, \mathcal{M}_{k}, \, y) \quad \forall \quad k \in \{1, 2,\dots, K\}
+\]</span></p>
+</div>
+<div id="limits-of-bayesian-model-averaging" class="section level3">
+<h3>Limits of Bayesian Model Averaging</h3>
+<p>The traditional marginal likelihood based approach to BMA is not without problems, three of which are notable and warrant some discussion before proceeding. First, traditional BMA rests upon a closed-<span class="math inline">\(\mathcal{M}\)</span> assumption–that is, the “true” model is among those under consideration in the set of candidate models <span class="math inline">\(\mathcal{M}\)</span>. In the open-<span class="math inline">\(\mathcal{M}\)</span> setting which arises when the “true” model is not among those under consideration, as will generally be the case in any social science application, the traditional approach to BMA is flawed and estimated effects based on posterior probability weights are likely to be biased <span class="citation">(<a href="#ref-Hollenbach2020" role="doc-biblioref">Hollenbach and Montgomery 2020</a>; <a href="#ref-Yao2018" role="doc-biblioref">Yao et al. 2018</a>)</span>. The extent to which this presents a problem depends on the nature of the research question and the inferential goals of the researcher, but it is generally advisable to undertake some form of sensitivity analysis to ensure the analyst’s substantive conclusions are robust to violations of the closed-<span class="math inline">\(\mathcal{M}\)</span> assumption.</p>
 <div class="a">
 <p>The second area of concern stems from the fact that posterior model probability weights may be highly sensitive to priors on parameters, model priors, or both. It is by this point common knowledge that specifying flat priors on the parameters of a model will tend to bias Bayes Factors, and by extension values that depend on them, violently in favor of the null model–that is “flat” priors, which to begin with are not a mathematically defined concept, can end up being extremely informative in all the wrong ways. My perhaps controversial take on this issue is that this is a feature of applied Bayesian inference rather than a bug–<em>if you make stupid assumptions, you will end up with stupid results</em>. The solution to this problem is to think carefully about what the universe of possible effect sizes you might observe is, assign reasonable priors that constrain the parameter space, and verify that the results are robust to alternative distributional assumptions.</p>
 </div>
 <div class="a">
 <p>The final concern relates to the possibility that the bridge sampling approximation used to derive the marginal likelihood may not be reliable. <span class="citation">Schad et al. (<a href="#ref-Schad2022" role="doc-biblioref">2022</a>)</span> provide guidelines for robust inference and sensitivity analysis based on approximate Bayes Factors, though many of the issues they highlight stem from logical inconsistencies inherent in the framework of null hypothesis significance testing that employing Bayesian methods does not somehow magically fix <span class="citation">(<a href="#ref-McShane2019" role="doc-biblioref">McShane et al. 2019</a>)</span>. As stated above, it is generally advisable to specify reasonable priors and consider alternative prior distributions. In addition to these suggestions, it is also generally advisable to estimate a distribution of the approximate marginal likelihood by running the bridge sampling algorithm multiple times for each model to ensure stability of the estimates.</p>
 </div>
-<div class="a">
-<p>To address the flaws of traditional BMA, virtually all of which stem from it’s reliance on Bayes Factors <span class="citation">(<a href="#ref-Hollenbach2020" role="doc-biblioref">Hollenbach and Montgomery 2020</a>)</span>, in the open-<span class="math inline">\(\mathcal{M}\)</span> setting <span class="citation">Yao et al. (<a href="#ref-Yao2018" role="doc-biblioref">2018</a>)</span> propose several alternative approaches to weighting posterior predictive distributions that do not rely on posterior model probabilities and thus avoid invoking the closed-<span class="math inline">\(\mathcal{M}\)</span> assumption. Instead, these approaches rely on predictive weights based on some form of either exact or approximate cross validation and implemented in the <code>loo</code> package <span class="citation">(<a href="#ref-Piironen2016" role="doc-biblioref">Piironen and Vehtari 2016</a>; <a href="#ref-Vehtari2020" role="doc-biblioref">Vehtari et al. 2020</a>)</span>. <a href="https://projecteuclid.org/journals/bayesian-analysis/volume-13/issue-3/Using-Stacking-to-Average-Bayesian-Predictive-Distributions-with-Discussion/10.1214/17-BA1091.full">Yao et al. <span class="citation">(<a href="#ref-Yao2018" role="doc-biblioref">2018</a>)</span></a> and <a href="http://fhollenbach.org/papers/Hollenbach_Montgomery_2019_BayesianModelSelection.pdf">Hollenbach and Montgomery <span class="citation">(<a href="#ref-Hollenbach2020" role="doc-biblioref">2020</a>)</span></a> provide accessible overviews of these approaches and in the interest brevity I direct interested readers to consult those works for further details.</p>
-</div>
-<div class="a">
-<p>Since predictive-based approaches to estimating model weights do not rely upon the closed-<span class="math inline">\(\mathcal{M}\)</span> assumption, they provide a way of either avoiding it altogether–whether this is the correct approach is fundamentally depends on the research question to be answered–or relaxing it as a robustness check on the posterior probability weights. Note that the core difference between each of these approaches to model averaging lies primarily in how the weights are estimated and the process of averaging across the posterior predictive distributions of each model by taking random draws from its posterior distribution proportional to its model weight is the same regardless of which approach is taken.</p>
 </div>
 </div>
-</div>
-<div id="bayesian-model-averaged-marginal-effects-an-applied-example" class="section level2 tabset">
-<h2>Bayesian Model Averaged Marginal Effects: An Applied Example</h2>
+<div id="bayesian-model-averaged-marginal-effects" class="section level2 tabset">
+<h2>Bayesian Model Averaged Marginal Effects</h2>
 <p>Once we’ve decided how to obtain the model weights, the <code>{marginaleffects}</code> package provides the necessary functionality to handle everything else for us thanks to the feature-rich support for various approaches to averaging across posterior distributions provided by <code>{brms}</code>’ <code>pp_average</code> function. To obtain the BMAME for a given parameter while accounting for the uncertainty in the model specifications, version 0.5.0 of <code>{marginaleffects}</code> allows users to specify the argument <code>type = "average"</code> passed to the main workhorse function for objects of class <code>brmsfit</code> and any additional arguments to be passed down to <code>pp_average</code> such as the type of weights to estimate, or alternatively a numeric vector of pre-estimated weights which is usually the more computationally efficient option and the approach I take in the applied example below.</p>
 <div class="a">
 <p>To demonstrate this new functionality, I draw on an example loosely adapted from part of my dissertation research in which I examine how the active participation of women in rebel groups during wartime shapes the political calculus of former combatant groups at war’s end–in short, I expect rebel groups where women participated in combat roles during wartime are <em>more likely</em> to form political parties and participate in post-conflict elections. Note that this demonstration is not comprehensive and only illustrates one aspect of how BMAMEs might be applied in practice. However, as far as <code>{marginaleffects}</code> functionality is concerned, the general workflow is identical regardless.</p>
@@ -337,7 +336,9 @@ postprob_weights &lt;- bridgesampling::post_prob(
   prior_prob = c(0.3, 0.3, 0.2, 0.2),
   model_names = c(&quot;post_prob_a&quot;, &quot;post_prob_b&quot;, &quot;post_prob_c&quot;, &quot;post_prob_d&quot;)
 )</code></pre>
+<div class="a">
 <p>In theory, it would be ideal to propagate any additional uncertainty introduced by the bridge sampling approximation forward by calculating the distribution of marginal effects for each of the 500 rows of the weights matrix. In practice, this proves computationally intractable so we instead take the average posterior probability of each model as shown below. While I focus on comparing contrasts via <code>comparisons</code> here, the same general ideas and workflow can be applied with <code>marginaleffects</code>.</p>
+</div>
 <pre class="r"><code>## Calculate Bayesian model averaged contrasts
 bma_contrasts_femrebels &lt;- comparisons(
     femrebels_mods[[2]],
@@ -362,7 +363,9 @@ summary(bma_contrasts_femrebels)</code></pre>
 ## 
 ## Model type:  brmsfit 
 ## Prediction type:  average</code></pre>
+<div class="a">
 <p>Combining the models based on their posterior probability weights, we see from the output of the <code>summary</code> function that rebel groups in which women participated as combatants during wartime compared to those groups that did not feature women in combat roles were more likely to transition to post-conflict political parties with an average difference of 0.1882 [CI: 0.03266, 0.3397]. We can also plot the resulting <code>bma_contrasts_draws</code> object using <code>{tidybayes}</code> to get a better look at the full model averaged posterior.</p>
+</div>
 <pre class="r"><code># Plot the model average posterior distribution of the contrasts
 ggplot(data = bma_contrasts_draws, aes(x = draw)) +
   # Add a slab interval geom
@@ -394,9 +397,15 @@ ggplot(data = bma_contrasts_draws, aes(x = draw)) +
   )</code></pre>
 <p><img src="assets/figures/Figure_2_BAMEs_Female_Combatants.jpeg" width="100%" height="100%" style="display: block; margin: auto;" /></p>
 </div>
-<div id="pseudo-bma-and-stacking" class="section level3">
-<h3>Pseudo-BMA+ and Stacking</h3>
+<div id="alternative-approaches-to-weighting" class="section level3">
+<h3>Alternative Approaches to Weighting</h3>
+<p>To address the flaws of traditional BMA, virtually all of which stem from it’s reliance on Bayes Factors <span class="citation">(<a href="#ref-Hollenbach2020" role="doc-biblioref">Hollenbach and Montgomery 2020</a>)</span>, in the open-<span class="math inline">\(\mathcal{M}\)</span> setting <span class="citation">Yao et al. (<a href="#ref-Yao2018" role="doc-biblioref">2018</a>)</span> propose several alternative approaches to weighting posterior predictive distributions that do not rely on posterior model probabilities and thus avoid invoking the closed-<span class="math inline">\(\mathcal{M}\)</span> assumption. Instead, these approaches rely on predictive weights based on some form of either exact or approximate cross validation and implemented in the <code>loo</code> package <span class="citation">(<a href="#ref-Piironen2016" role="doc-biblioref">Piironen and Vehtari 2016</a>; <a href="#ref-Vehtari2020" role="doc-biblioref">Vehtari et al. 2020</a>)</span>. <a href="https://projecteuclid.org/journals/bayesian-analysis/volume-13/issue-3/Using-Stacking-to-Average-Bayesian-Predictive-Distributions-with-Discussion/10.1214/17-BA1091.full">Yao et al. <span class="citation">(<a href="#ref-Yao2018" role="doc-biblioref">2018</a>)</span></a> and <a href="http://fhollenbach.org/papers/Hollenbach_Montgomery_2019_BayesianModelSelection.pdf">Hollenbach and Montgomery <span class="citation">(<a href="#ref-Hollenbach2020" role="doc-biblioref">2020</a>)</span></a> provide accessible overviews of these approaches and in the interest brevity I direct interested readers to consult those works for further details.</p>
+<div class="a">
+<p>Since predictive-based approaches to estimating model weights do not rely upon the closed-<span class="math inline">\(\mathcal{M}\)</span> assumption, they provide a way of either avoiding it altogether–whether this is the correct approach is fundamentally dependent on the research question to be answered–or relaxing it as a robustness check on the posterior probability weights. Note the core difference between each of these approaches to model averaging lies primarily in how the weights are estimated and the process of averaging across the posterior predictive distributions of each model by taking random draws from its posterior distribution proportional to its model weight is the same regardless of which approach is taken.</p>
+</div>
+<div class="a">
 <p>Turning to the alternatives to traditional BMA proposed by <span class="citation">Yao et al. (<a href="#ref-Yao2018" role="doc-biblioref">2018</a>)</span>, we begin by calculating the pointwise log likelihood and relative efficiency for each model in the set under consideration as shown in the documentation for the <code>loo</code> package <span class="citation">(<a href="#ref-Vehtari2020" role="doc-biblioref">Vehtari et al. 2020</a>)</span>.</p>
+</div>
 <pre class="r"><code># Calculate the log likelihood for each model
 femrebels_log_lik_list &lt;- map(
   .x = femrebels_mods,
@@ -408,7 +417,9 @@ femrebels_r_eff_list &lt;- map(
   .x = femrebels_log_lik_list,
   ~ loo::relative_eff(exp(.x), chain_id = 1:30000)
 )</code></pre>
+<div class="a">
 <p>Once we have obtained the above quantities, we can calculate three alternative sets of weights and see how they compare to the posterior probability model weights.</p>
+</div>
 <pre class="r"><code>## Calculate PSIS-LOO Based Stacking Weights
 femrebels_stacking_weights &lt;- loo_model_weights(
   femrebels_log_lik_list,
@@ -510,7 +521,9 @@ summary(kfold_contrasts_femrebels)</code></pre>
 ## 
 ## Model type:  brmsfit 
 ## Prediction type:  average</code></pre>
-<p>We see that each of these approaches gives more or less the same answer–I have yet to personally encounter a case involving real data in which stacking and BMA based approaches differ wildly in the answers they provide. To get a closer look of where the slight differences are coming from, we can look at the model weights derived from each method.</p>
+<div class="a">
+<p>We see that each of these approaches gives more or less the same answer and I have yet to personally encounter a case involving real data in which predictive and marginal likelihood based approaches differ wildly in the results they produce assuming reasonable priors are placed on each of the model parameters.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> To get a closer look at where the slight differences are coming from, we can check the model weights derived from each estimation method.</p>
+</div>
 <pre class="r"><code># Print the weights
 tibble::tibble(
   model = 1:4,
@@ -526,21 +539,23 @@ tibble::tibble(
 ## 2     2 2.980128e-09     0.04954048          0.0000000272           0.0713
 ## 3     3 8.537654e-09     0.22259930          0.00000615             0.237 
 ## 4     4 1.000000e+00     0.71077398          1.00                   0.665</code></pre>
+<div class="a">
 <p>The output above is quite informative in highlighting where the differences lie–the two stacking-based approaches are selecting a single model with probability 1. This may be preferable under some circumstances and less so in others depending on the research question and inferential goals. Traditional BMA and pseudo-BMA with Bayesian Bootstrap produce virtually identical estimates for the weights.</p>
+</div>
 </div>
 </div>
 <div id="concluding-thoughts" class="section level2">
 <h2>Concluding Thoughts</h2>
-<p>This concludes this brief illustration of BMA with <code>{brms}</code> and <code>{marginaleffects}</code>, though there will almost certainly be subsequent additions and further posts on this topic. The general idea is that selecting a single model is usually the wrong approach and there is seldom any need to do so. By applying probability theory to average across posterior distributions when estimating average effects, we can obtain interpretable model averaged estimates. Finally, remember that <em>friends don’t let friends do stepwise regression</em>.</p>
+<p>This concludes this brief illustration of BMA with <code>{brms}</code> and <code>{marginaleffects}</code>, though there will almost certainly be subsequent additions and further posts on this topic. The general idea is that selecting a single model is usually the wrong approach and there is seldom any need to do so. While no method of estimation is perfect, BMA and its variants provide a principled, relatively robust way to propagate uncertainty in quantities typically of interest to researchers in the social sciences and can help us avoid unnecessary dichotomies that are, in most cases, false. By applying probability theory to average across posterior distributions when estimating average marginal effects, we can obtain interpretable model averaged estimates for both linear and non-linear regression models.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2>References</h2>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-Achen2005" class="csl-entry">
-Achen, Christopher H. 2005. <span>“Let’s Put Garbage-Can Regressions and Garbage-Can Probits Where They Belong.”</span> <em>Conflict Management and Peace Science</em> 22(4): 327–39.
+Achen, Christopher H. 2005. <span>“<a href="https://doi.org/10.1080/07388940500339167">Let’s Put Garbage-Can Regressions and Garbage-Can Probits Where They Belong</a>.”</span> <em>Conflict Management and Peace Science</em> 22(4): 327–39.
 </div>
 <div id="ref-Albert2022" class="csl-entry">
-Albert, Karen E. 2022. <span>“What Is Rebel Governance? Introducing a New Dataset on Rebel Institutions, 1945<span></span>2012.”</span> <em>Journal of Peace Research</em>.
+Albert, Karen E. 2022. <span>“<a href="https://doi.org/10.1177/00223433211051848">What Is Rebel Governance? Introducing a New Dataset on Rebel Institutions, 1945<span></span>2012</a>.”</span> <em>Journal of Peace Research</em>.
 </div>
 <div id="ref-ArelBundock2022" class="csl-entry">
 Arel-Bundock, Vincent. 2022. <em>Marginaleffects: Marginal Effects, Marginal Means, Predictions, and Contrasts</em>. <a href="https://vincentarelbundock.github.io/marginaleffects/">https://vincentarelbundock.github.io/marginaleffects/</a>.
@@ -549,89 +564,90 @@ Arel-Bundock, Vincent. 2022. <em>Marginaleffects: Marginal Effects, Marginal Mea
 Bartels, Larry M. 1997. <span>“Specification Uncertainty and Model Averaging.”</span> <em>American Journal of Political Science</em> 41: 641–74.
 </div>
 <div id="ref-Braithwaite2019" class="csl-entry">
-Braithwaite, Jessica Maves, and Kathleen Gallagher Cunningham. 2019. <span>“When Organizations Rebel: Introducing the Foundations of Rebel Group Emergence (<span>FORGE</span>) Dataset.”</span> <em>International Studies Quarterly</em> 64(1): 183–93.
+Braithwaite, Jessica Maves, and Kathleen Gallagher Cunningham. 2019. <span>“<a href="https://doi.org/10.1093/isq/sqz085">When Organizations Rebel: Introducing the Foundations of Rebel Group Emergence (<span>FORGE</span>) Dataset</a>.”</span> <em>International Studies Quarterly</em> 64(1): 183–93.
 </div>
 <div id="ref-Buerkner2017" class="csl-entry">
-Bürkner, Paul-Christian. 2017. <span>“<span class="nocase">brms</span>: An <span>R</span> Package for Bayesian Multilevel Models Using Stan.”</span> <em>Journal of Statistical Software</em> 80: 1–28.
+Bürkner, Paul-Christian. 2017. <span>“<a href="https://doi.org/10.18637/jss.v080.i01"><span class="nocase">brms</span>: An <span>R</span> Package for Bayesian Multilevel Models Using Stan</a>.”</span> <em>Journal of Statistical Software</em> 80: 1–28.
 </div>
 <div id="ref-Buerkner2018" class="csl-entry">
 ———. 2018. <span>“Advanced Bayesian Multilevel Modeling with the <span>R</span> Package Brms.”</span> <em>The R Journal</em> 10: 395–411.
 </div>
 <div id="ref-Clarke2005" class="csl-entry">
-Clarke, Kevin A. 2005. <span>“The Phantom Menace: Omitted Variable Bias in Econometric Research.”</span> <em>Conflict Management and Peace Science</em> 22(4): 341–52.
+Clarke, Kevin A. 2005. <span>“<a href="https://doi.org/10.1080/07388940500339183">The Phantom Menace: Omitted Variable Bias in Econometric Research</a>.”</span> <em>Conflict Management and Peace Science</em> 22(4): 341–52.
 </div>
 <div id="ref-Clarke2007" class="csl-entry">
 ———. 2007. <span>“The Necessity of Being Comparative: Theory Confirmation in Quantitative Political Science.”</span> <em>Comparative Political Studies</em> 40: 886–908.
 </div>
 <div id="ref-Clarke2009" class="csl-entry">
-———. 2009. <span>“Return of the Phantom Menace.”</span> <em>Conflict Management and Peace Science</em> 26(1): 46–66.
+———. 2009. <span>“<a href="https://doi.org/10.1177/0738894208097666">Return of the Phantom Menace</a>.”</span> <em>Conflict Management and Peace Science</em> 26(1): 46–66.
 </div>
 <div id="ref-Cranmer2017" class="csl-entry">
-Cranmer, Skyler J., and Bruce A. Desmarais. 2017. <span>“What Can We Learn from Predictive Modeling?”</span> <em>Political Analysis</em> 25(2): 145–66.
+Cranmer, Skyler J., and Bruce A. Desmarais. 2017. <span>“<a href="https://doi.org/10.1017/pan.2017.3">What Can We Learn from Predictive Modeling?</a>”</span> <em>Political Analysis</em> 25(2): 145–66.
 </div>
 <div id="ref-Cranmer2015" class="csl-entry">
-Cranmer, Skyler J., Douglas R. Rice, and Randolph M. Siverson. 2015. <span>“What to Do about Atheoretic Lags.”</span> <em>Political Science Research and Methods</em> 5(4): 641–65.
+Cranmer, Skyler J., Douglas R. Rice, and Randolph M. Siverson. 2015. <span>“<a href="https://doi.org/10.1017/psrm.2015.36">What to Do about Atheoretic Lags</a>.”</span> <em>Political Science Research and Methods</em> 5(4): 641–65.
 </div>
 <div id="ref-Gelman1998" class="csl-entry">
 Gelman, Andrew, and Xiao-Li Meng. 1998. <span>“Simulating Normalizing Constants: From Importance Sampling to Bridge Sampling to Path Sampling.”</span> <em>Statistical Science</em> 13(2): 163–85.
 </div>
 <div id="ref-Gronau2017" class="csl-entry">
-Gronau, Quentin F. et al. 2017. <span>“A Tutorial on Bridge Sampling.”</span> <em>Journal of Mathematical Psychology</em> 81: 80–97.
+Gronau, Quentin F. et al. 2017. <span>“<a href="https://doi.org/10.1016/j.jmp.2017.09.005">A Tutorial on Bridge Sampling</a>.”</span> <em>Journal of Mathematical Psychology</em> 81: 80–97.
 </div>
 <div id="ref-Hollenbach2020" class="csl-entry">
-Hollenbach, Florian M., and Jacob M. Montgomery. 2020. <span>“Bayesian Model Selection, Model Comparison, and Model Averaging.”</span> In <em>The <span>SAGE</span> Handbook of Research Methods in Political Science and International Relations</em>, eds. Luigi Curini and Robert Franzese. <span>SAGE</span> Publications Ltd, 937–60.
+Hollenbach, Florian M., and Jacob M. Montgomery. 2020. <span>“<a href="https://doi.org/10.4135/9781526486387">Bayesian Model Selection, Model Comparison, and Model Averaging</a>.”</span> In <em>The <span>SAGE</span> Handbook of Research Methods in Political Science and International Relations</em>, eds. Luigi Curini and Robert Franzese. <span>SAGE</span> Publications Ltd, 937–60.
 </div>
 <div id="ref-Imai2011" class="csl-entry">
-Imai, Kosuke, and Dustin Tingley. 2011. <span>“A Statistical Method for Empirical Testing of Competing Theories.”</span> <em>American Journal of Political Science</em> 56(1): 218–36.
+Imai, Kosuke, and Dustin Tingley. 2011. <span>“<a href="https://doi.org/10.1111/j.1540-5907.2011.00555.x">A Statistical Method for Empirical Testing of Competing Theories</a>.”</span> <em>American Journal of Political Science</em> 56(1): 218–36.
 </div>
 <div id="ref-Juhl2019" class="csl-entry">
-Juhl, Sebastian. 2019. <span>“The Sensitivity of Spatial Regression Models to Network Misspecification.”</span> <em>Political Analysis</em> 28(1): 1–19.
+Juhl, Sebastian. 2019. <span>“<a href="https://doi.org/10.1017/pan.2019.12">The Sensitivity of Spatial Regression Models to Network Misspecification</a>.”</span> <em>Political Analysis</em> 28(1): 1–19.
 </div>
 <div id="ref-McShane2019" class="csl-entry">
 McShane, Blakeley B. et al. 2019. <span>“Abandon Statistical Significance.”</span> <em>The American Statistician</em> 73(SUP1): 235–45.
 </div>
 <div id="ref-Montgomery2010" class="csl-entry">
-Montgomery, Jacob M., and Brendan Nyhan. 2010. <span>“Bayesian Model Averaging: Theoretical Developments and Practical Applications.”</span> <em>Political Analysis</em> 18(2): 245–70.
+Montgomery, Jacob M., and Brendan Nyhan. 2010. <span>“<a href="https://doi.org/10.1093/pan/mpq001">Bayesian Model Averaging: Theoretical Developments and Practical Applications</a>.”</span> <em>Political Analysis</em> 18(2): 245–70.
 </div>
 <div id="ref-Montgomery2018" class="csl-entry">
-Montgomery, Jacob M., Brendan Nyhan, and Michelle Torres. 2018. <span>“How Conditioning on Posttreatment Variables Can Ruin Your Experiment and What to Do about It.”</span> <em>American Journal of Political Science</em> 62(3): 760–75.
+Montgomery, Jacob M., Brendan Nyhan, and Michelle Torres. 2018. <span>“<a href="https://doi.org/10.1111/ajps.12357">How Conditioning on Posttreatment Variables Can Ruin Your Experiment and What to Do about It</a>.”</span> <em>American Journal of Political Science</em> 62(3): 760–75.
 </div>
 <div id="ref-Nafa2022" class="csl-entry">
 Nafa, A. Jordan, and P. DeAnne Roark. 2022. <span>“Broadening the Base? How Female Rebels Impact the Transition and Survival of Post-Conflict Rebel Parties.”</span>
 </div>
 <div id="ref-Piironen2016" class="csl-entry">
-Piironen, Juho, and Aki Vehtari. 2016. <span>“Comparison of Bayesian Predictive Methods for Model Selection.”</span> <em>Statistics and Computing</em> 27: 711–35.
+Piironen, Juho, and Aki Vehtari. 2016. <span>“<a href="https://doi.org/10.1007/s11222-016-9649-y">Comparison of Bayesian Predictive Methods for Model Selection</a>.”</span> <em>Statistics and Computing</em> 27: 711–35.
 </div>
 <div id="ref-Pluemper2018" class="csl-entry">
-Plümper, Thomas, and Richard Traunmüller. 2018. <span>“The Sensitivity of Sensitivity Analysis.”</span> <em>Political Science Research and Methods</em> 8(1): 149–59.
+Plümper, Thomas, and Richard Traunmüller. 2018. <span>“<a href="https://doi.org/10.1017/psrm.2018.30">The Sensitivity of Sensitivity Analysis</a>.”</span> <em>Political Science Research and Methods</em> 8(1): 149–59.
 </div>
 <div id="ref-Schad2022" class="csl-entry">
-Schad, Daniel J. et al. 2022. <span>“Workflow Techniques for the Robust Use of Bayes Factors.”</span> <em>Psychological Methods</em>.
+Schad, Daniel J. et al. 2022. <span>“<a href="https://doi.org/10.1037/met0000472">Workflow Techniques for the Robust Use of Bayes Factors</a>.”</span> <em>Psychological Methods</em>.
 </div>
 <div id="ref-Schrodt2014" class="csl-entry">
-Schrodt, Philip A. 2014. <span>“Seven Deadly Sins of Contemporary Quantitative Political Analysis.”</span> <em>Journal of Peace Research</em> 51: 287–300.
+Schrodt, Philip A. 2014. <span>“<a href="https://doi.org/10.1177/0022343313499597">Seven Deadly Sins of Contemporary Quantitative Political Analysis</a>.”</span> <em>Journal of Peace Research</em> 51: 287–300.
 </div>
 <div id="ref-Vehtari2020" class="csl-entry">
 Vehtari, Aki et al. 2020. <span>“Loo: Efficient Leave-One-Out Cross-Validation and WAIC for Bayesian Models.”</span> <a href="https://mc-stan.org/loo/">https://mc-stan.org/loo/</a>.
 </div>
 <div id="ref-Wang2020" class="csl-entry">
-Wang, Lazhi, David E. Jones, and Xiao-Li Meng. 2020. <span>“Warp Bridge Sampling: The Next Generation.”</span> <em>Journal of the American Statistical Association</em>: 1–17.
+Wang, Lazhi, David E. Jones, and Xiao-Li Meng. 2020. <span>“<a href="https://doi.org/10.1080/01621459.2020.1825447">Warp Bridge Sampling: The Next Generation</a>.”</span> <em>Journal of the American Statistical Association</em>: 1–17.
 </div>
 <div id="ref-Ward2010" class="csl-entry">
-Ward, Michael D, Brian D Greenhill, and Kristin M Bakke. 2010. <span>“The Perils of Policy by p-Value: Predicting Civil Conflicts.”</span> <em>Journal of Peace Research</em> 47(4): 363–75.
+Ward, Michael D, Brian D Greenhill, and Kristin M Bakke. 2010. <span>“<a href="https://doi.org/10.1177/0022343309356491">The Perils of Policy by p-Value: Predicting Civil Conflicts</a>.”</span> <em>Journal of Peace Research</em> 47(4): 363–75.
 </div>
 <div id="ref-Wood2017" class="csl-entry">
-Wood, Reed M., and Jakana L. Thomas. 2017. <span>“Women on the Frontline.”</span> <em>Journal of Peace Research</em> 54(1): 31–46.
+Wood, Reed M., and Jakana L. Thomas. 2017. <span>“<a href="https://doi.org/10.1177/0022343316675025">Women on the Frontline</a>.”</span> <em>Journal of Peace Research</em> 54(1): 31–46.
 </div>
 <div id="ref-Yao2018" class="csl-entry">
-Yao, Yuling, Aki Vehtari, Daniel Simpson, and Andrew Gelman. 2018. <span>“Using Stacking to Average Bayesian Predictive Distributions (with Discussion).”</span> <em>Bayesian Analysis</em> 13(3): 917–1007.
+Yao, Yuling, Aki Vehtari, Daniel Simpson, and Andrew Gelman. 2018. <span>“<a href="https://doi.org/10.1214/17-ba1091">Using Stacking to Average Bayesian Predictive Distributions (with Discussion)</a>.”</span> <em>Bayesian Analysis</em> 13(3): 917–1007.
 </div>
 </div>
 </div>
-<div class="footnotes">
+<div class="footnotes footnotes-end-of-document">
 <hr />
 <ol>
 <li id="fn1"><p>This focus on only the first post-conflict election is necessary to limit the universe of possible confounders and avoid issues of collider bias that arise when examining subsequent elections.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
 <li id="fn2"><p>I construct a latent measure of the degree to which rebel groups engage in functions characteristic of state institutions during wartime based on estimates from a Bayesian multidimensional item response model.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>As stated in the section outlining the limits of traditional BMA, if you make stupid assumptions you will end up with stupid results.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
