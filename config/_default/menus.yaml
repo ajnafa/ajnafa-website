@@ -17,7 +17,7 @@ main:
     url: '#contact'
     weight: 30
   - name: "CV/Resume"
-    url: 'uploads/Nafa_Jordan_CV_04-11-2022.pdf'
+    url: 'uploads/Nafa, Jordan_CV_October_2022.pdf'
     weight: 40
 #  - name: Teaching
 #    url: 'teaching/'
