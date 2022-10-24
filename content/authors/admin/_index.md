@@ -50,7 +50,10 @@ social:
 # To enable, copy your resume/CV to `static/files/cv.pdf`
 - icon: cv
   icon_pack: ai
-  link: "uploads/Nafa_Jordan_CV_04-11-2022.pdf"
+  link: "uploads/Nafa, Jordan_CV_October_2022.pdf"
+- icon: linkedin
+  icon_pack: fab
+  link: 'https://www.linkedin.com/in/a-jordan-nafa/'
 
 # Organizational groups that you belong to (for People widget)
 #   Set this to `[]` or comment out if you are not using People widget.
